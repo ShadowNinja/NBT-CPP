@@ -1,0 +1,8 @@
+.scons*
+*.o
+*.obj
+*.a
+*.lib
+test
+*.exe
+
