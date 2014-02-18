@@ -1,6 +1,7 @@
 
 #include <iostream>
 #include <string>
+#include <cstring>
 #include <sstream>
 #include <cassert>
 
@@ -13,26 +14,30 @@ int main(int argc, char *argv[]) {
 		"\x0A" // compound
 			"\x01" // Byte
 				"\x00\x01" // Size 1
-				"\x41" // key "A"
+				"A" // key "A"
 				"\x40" // value, 0x40
+			"\x08" // String
+				"\x00\x06"
+				"foobar"
+				"\x00\x09"
+				"<3 C++ 11"
 			"\x03" // Int
 				"\x00\x04" // Size 4
-				"\x74\x65\x73\x74" // key "test"
+				"test" // key "test"
 				"\x12\x34\x56\x78" // value, 0x12345678
 			"\x00" // End
-		, 18);
+		, 38);
 
-	NBT::Tag tag((NBT::Byte*) data.c_str());
+	NBT::Tag root((NBT::Byte*) data.c_str());
 	std::cout << hexdump(data) << std::endl;
-	std::cout << hexdump(tag.write()) << std::endl;
+	std::cout << hexdump(root.write()) << std::endl;
 
-	assert(tag["A"].toByte() == 0x40);
-	assert(tag["test"].toInt() == 0x12345678);
+	assert(root["A"].toByte() == 0x40);
+	assert(root["test"].toInt() == 0x12345678);
+	assert(strcmp(root["foobar"].toString().value, "<3 C++ 11") == 0);
 
-	assert(tag.write() == data);
+	//assert(root.write() == data); // Data is unordered
 
-	NBT::Tag root(NBT::TagType::Compound);
-	//root.insert("foo", NBT::Tag(NBT::TagType::List));
 	root["foo"] = NBT::TagType::List;
 
 	assert(root["foo"].type == NBT::TagType::List);
@@ -42,6 +47,12 @@ int main(int argc, char *argv[]) {
 
 	root["foo"][1][0] = 123L;
 	assert(root["foo"][1][0].toLong() == 123L);
+
+	root = NBT::TagType::Compound;  // Reset
+	root["A"] = (NBT::Byte) 0x40;
+	root["test"] = (NBT::Int) 0x12345678;	
+	root["foobar"] = std::string("<3 C++ 11");
+	std::cout << hexdump(root.write()) << std::endl;
 
 	std::cout << "Success!" << std::endl;
 	return 0;

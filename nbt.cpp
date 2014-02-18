@@ -21,18 +21,23 @@ Tag::Tag(const Byte *bytes)
 	read(bytes);
 }
 
-Tag::Tag(const TagType tag, uint32_t size)
+Tag::Tag(const TagType tag, UInt size)
 {
 	type = NBT::TagType::End;
 	setTag(tag, size);
 }
 
-Tag::Tag(const Byte x)    : type(TagType::Byte)    { value.v_byte = x; }
-Tag::Tag(const int16_t x) : type(TagType::Short)   { value.v_short = x; }
-Tag::Tag(const int32_t x) : type(TagType::Int)     { value.v_int = x; }
-Tag::Tag(const int64_t x) : type(TagType::Long)    { value.v_long = x; }
-Tag::Tag(const float x)   : type(TagType::Float)   { value.v_float = x; }
-Tag::Tag(const double x)  : type(TagType::Double)  { value.v_double = x; }
+Tag::Tag(const Byte x)   : type(TagType::Byte)    { value.v_byte = x; }
+Tag::Tag(const Short x)  : type(TagType::Short)   { value.v_short = x; }
+Tag::Tag(const Int x)    : type(TagType::Int)     { value.v_int = x; }
+Tag::Tag(const Long x)   : type(TagType::Long)    { value.v_long = x; }
+Tag::Tag(const float x)  : type(TagType::Float)   { value.v_float = x; }
+Tag::Tag(const double x) : type(TagType::Double)  { value.v_double = x; }
+Tag::Tag(const std::string x)  : type(TagType::String)  {
+	value.v_string.size = x.size();
+	value.v_string.value = new char[x.size()];
+	memcpy((void*) value.v_string.value, (void*) x.c_str(), x.size());
+}
 
 Tag::Tag(const Tag &t)
 {
@@ -73,9 +78,9 @@ Tag & Tag::operator=(Tag &&t)
 	return *this;
 }
 
-Tag & Tag::operator[](const int32_t &k)
+Tag & Tag::operator[](const Int &k)
 {
-	uint32_t ak = TOABS(k, value.v_list.size);
+	UInt ak = TOABS(k, value.v_list.size);
 	ensureSize<List, Tag>(&value.v_list, ak + 1);
 	return value.v_list.value[ak];
 }
@@ -93,10 +98,10 @@ Tag & Tag::operator+=(const Byte &b)
 	return *this;
 }
 
-Tag & Tag::operator+=(const int32_t &i)
+Tag & Tag::operator+=(const Int &i)
 {
 	assert(type == TagType::IntArray);
-	ensureSize<IntArray, int32_t>(&value.v_int_array, value.v_int_array.size + 1);
+	ensureSize<IntArray, Int>(&value.v_int_array, value.v_int_array.size + 1);
 	value.v_int_array.value[value.v_int_array.size - 1] = i;
 	return *this;
 }
@@ -123,7 +128,7 @@ Tag & Tag::operator+=(Tag &&t)
  * Misc *
  ********/
 
-void Tag::setTag(const TagType tag, uint32_t size)
+void Tag::setTag(const TagType tag, UInt size)
 {
 	free();
 	type = tag;
@@ -145,7 +150,7 @@ void Tag::setTag(const TagType tag, uint32_t size)
 		break;
 	case TagType::IntArray:
 		value.v_int_array.size = size;
-		value.v_int_array.value = new int32_t[size];
+		value.v_int_array.value = new Int[size];
 		break;
 	default:
 		memset((void*) &value, 0, sizeof(value));
@@ -155,7 +160,7 @@ void Tag::setTag(const TagType tag, uint32_t size)
 void Tag::copy(const Tag &t)
 {
 	free();
-	uint64_t size;
+	ULong size;
 	type = t.type;
 	switch (type) {
 	case TagType::ByteArray:
@@ -177,7 +182,7 @@ void Tag::copy(const Tag &t)
 		value.v_list.tagid = t.value.v_list.tagid;
 		value.v_list.size = size;
 		value.v_list.value = new Tag[size];
-		for (uint32_t i = 0; i < size; i++) {
+		for (UInt i = 0; i < size; i++) {
 			value.v_list.value[i] = t.value.v_list.value[i];
 		}
 		break;
@@ -187,7 +192,7 @@ void Tag::copy(const Tag &t)
 	case TagType::IntArray:
 		size = t.value.v_int_array.size;
 		value.v_int_array.size = size;
-		value.v_int_array.value = new int32_t[size];
+		value.v_int_array.value = new Int[size];
 		memcpy((void*) value.v_int_array.value,
 				(void*) t.value.v_int_array.value, size * 4);
 		break;
@@ -225,13 +230,13 @@ void Tag::free()
  *****************/
 
 template <typename container, typename contained>
-	void Tag::ensureSize(container *field, uint32_t size)
+	void Tag::ensureSize(container *field, UInt size)
 {
 	if (size > field->size) {
 		container newc;
 		newc.size = size;
 		newc.value = new contained[size];
-		for (uint32_t i = 0; i < field->size; i++) {
+		for (UInt i = 0; i < field->size; i++) {
 			newc.value[i] = std::move(field->value[i]);
 		}
 		delete [] field->value;
@@ -239,26 +244,26 @@ template <typename container, typename contained>
 	}
 }
 
-void Tag::insert(const int32_t &k, const Byte &b)
+void Tag::insert(const Int &k, const Byte &b)
 {
 	assert(type == TagType::ByteArray);
-	uint32_t ak = TOABS(k, value.v_list.size);
+	UInt ak = TOABS(k, value.v_list.size);
 	ensureSize<ByteArray, Byte>(&value.v_byte_array, ak);
 	value.v_byte_array.value[ak] = b;
 }
 
-void Tag::insert(const int32_t &k, const int32_t &i)
+void Tag::insert(const Int &k, const Int &i)
 {
 	assert(type == TagType::IntArray);
-	uint32_t ak = TOABS(k, value.v_list.size);
-	ensureSize<IntArray, int32_t>(&value.v_int_array, ak);
+	UInt ak = TOABS(k, value.v_list.size);
+	ensureSize<IntArray, Int>(&value.v_int_array, ak);
 	value.v_int_array.value[ak] = i;
 }
 
-void Tag::insert(const int32_t &k, const Tag &t)
+void Tag::insert(const Int &k, const Tag &t)
 {
 	assert(type == TagType::List);
-	uint32_t ak = TOABS(k, value.v_list.size);
+	UInt ak = TOABS(k, value.v_list.size);
 	ensureSize<List, Tag>(&value.v_list, ak);
 	value.v_list.value[ak] = t;
 }
@@ -276,9 +281,9 @@ void Tag::insert(const std::string &k, const Tag &t)
  *********/
 
 Byte       Tag::toByte()      { return value.v_byte; }
-int16_t    Tag::toShort()     { return value.v_short; }
-int32_t    Tag::toInt()       { return value.v_int; }
-int64_t    Tag::toLong()      { return value.v_long; }
+Short      Tag::toShort()     { return value.v_short; }
+Int        Tag::toInt()       { return value.v_int; }
+Long       Tag::toLong()      { return value.v_long; }
 float      Tag::toFloat()     { return value.v_float; }
 double     Tag::toDouble()    { return value.v_double; }
 ByteArray &Tag::toByteArray() { return value.v_byte_array; }
@@ -294,10 +299,10 @@ IntArray  &Tag::toIntArray()  { return value.v_int_array; }
  *****************/
 
 // Doesn't include size of tagid (always 1)
-uint64_t Tag::getSerializedSize() const
+ULong Tag::getSerializedSize() const
 {
-	uint64_t size = 0;
-	uint64_t i = 0;
+	ULong size = 0;
+	ULong i = 0;
 	switch (type) {
 	case TagType::Byte: return 1;
 	case TagType::Short: return 2;
@@ -357,15 +362,14 @@ uint64_t Tag::getSerializedSize() const
 
 #define WRITE_STRING(str, size)\
 	WRITE_SHORT(size)\
-	strncpy((char*) (bytes + index), str, size);\
+	memcpy((void*) (bytes + index), (void*) str, size);\
 	index += size;
 
 std::string Tag::write() const
 {
-	uint64_t index = 0;
-	uint32_t i = 0;
-	uint64_t size = getSerializedSize() + 1;  // Add tag size
-	uint16_t slen;
+	ULong index = 0;
+	UInt i = 0;
+	ULong size = getSerializedSize() + 1;  // Add tag size
 	Byte bytes[size];
 	std::string str;
 
@@ -410,11 +414,11 @@ std::string Tag::write() const
 	case TagType::Compound:
 		for (auto &it : *value.v_compound) {
 			WRITE_BYTE(it.second.type)
-			slen = it.first.size();
-			WRITE_STRING(it.first.c_str(), slen)
+			WRITE_STRING(it.first.c_str(), it.first.size())
 			str = it.second.write();
 			// Skip first byte (tag id)
-			strncpy((char*) (bytes + index), str.c_str() + 1, str.size() - 1);
+			memcpy((void*) (bytes + index),
+				(void*) (str.c_str() + 1), str.size() - 1);
 			index += str.size() - 1;
 		}
 		WRITE_BYTE(TagType::End);
@@ -422,7 +426,7 @@ std::string Tag::write() const
 	case TagType::IntArray:
 		WRITE_SHORT(value.v_int_array.size)
 		WRITE_BYTES(value.v_int_array.value,
-				value.v_int_array.size * sizeof(int32_t))
+				value.v_int_array.size * sizeof(Int))
 		break;
 	}
 
@@ -437,12 +441,12 @@ std::string Tag::write() const
 
 void Tag::read(const Byte *bytes)
 {
-	uint64_t index = 0;
+	ULong index = 0;
 	TagType tag = (TagType) read_byte(bytes, index);
 	read_tag(bytes, index, tag);
 }
 
-void Tag::read_tag(const Byte *bytes, uint64_t &index, TagType tag)
+void Tag::read_tag(const Byte *bytes, ULong &index, TagType tag)
 {
 	type = tag;
 	switch (tag) {
@@ -486,38 +490,38 @@ void Tag::read_tag(const Byte *bytes, uint64_t &index, TagType tag)
 	}
 }
 
-inline Byte Tag::read_byte(const Byte *bytes, uint64_t &index)
+inline Byte Tag::read_byte(const Byte *bytes, ULong &index)
 {
 	return bytes[index++];
 }
 
-inline int16_t Tag::read_short(const Byte *bytes, uint64_t &index)
+inline Short Tag::read_short(const Byte *bytes, ULong &index)
 {
-	return ((int16_t) bytes[index++] << 8)
-			| ((int16_t) bytes[index++]);
+	return ((Short) bytes[index++] << 8)
+			| ((Short) bytes[index++]);
 }
 
-inline int32_t Tag::read_int(const Byte *bytes, uint64_t &index)
+inline Int Tag::read_int(const Byte *bytes, ULong &index)
 {
-	return ((int32_t) bytes[index++] << 24)
-			| ((int32_t) bytes[index++] << 16)
-			| ((int32_t) bytes[index++] << 8)
-			| ((int32_t) bytes[index++]);
+	return ((Int) bytes[index++] << 24)
+			| ((Int) bytes[index++] << 16)
+			| ((Int) bytes[index++] << 8)
+			| ((Int) bytes[index++]);
 }
 
-inline int64_t Tag::read_long(const Byte *bytes, uint64_t &index)
+inline Long Tag::read_long(const Byte *bytes, ULong &index)
 {
-	return ((int64_t) bytes[index++] << 56)
-			| ((int64_t) bytes[index++] << 48)
-			| ((int64_t) bytes[index++] << 40)
-			| ((int64_t) bytes[index++] << 32)
-			| ((int64_t) bytes[index++] << 24)
-			| ((int64_t) bytes[index++] << 16)
-			| ((int64_t) bytes[index++] << 8 )
-			| ((int64_t) bytes[index++]);
+	return ((Long) bytes[index++] << 56)
+			| ((Long) bytes[index++] << 48)
+			| ((Long) bytes[index++] << 40)
+			| ((Long) bytes[index++] << 32)
+			| ((Long) bytes[index++] << 24)
+			| ((Long) bytes[index++] << 16)
+			| ((Long) bytes[index++] << 8 )
+			| ((Long) bytes[index++]);
 }
 
-inline float Tag::read_float(const Byte *bytes, uint64_t &index)
+inline float Tag::read_float(const Byte *bytes, ULong &index)
 {
 	float x;
 	memcpy((void*) &x, (void*) (bytes + index), 4);
@@ -525,7 +529,7 @@ inline float Tag::read_float(const Byte *bytes, uint64_t &index)
 	return x;
 }
 
-inline double Tag::read_double(const Byte *bytes, uint64_t &index)
+inline double Tag::read_double(const Byte *bytes, ULong &index)
 {
 	double x;
 	memcpy((void*) &x, (void*) (bytes + index), 8);
@@ -533,35 +537,35 @@ inline double Tag::read_double(const Byte *bytes, uint64_t &index)
 	return x;
 }
 
-ByteArray Tag::read_byte_array(const Byte *bytes, uint64_t &index)
+ByteArray Tag::read_byte_array(const Byte *bytes, ULong &index)
 {
 	ByteArray x;
 	x.size = read_int(bytes, index);
 	x.value = new Byte[x.size];
-	for (uint32_t i = 0; i < x.size; i++) {
+	for (UInt i = 0; i < x.size; i++) {
 		x.value[i] = read_byte(bytes, index);
 	}
 	return x;
 }
 
-String Tag::read_string(const Byte *bytes, uint64_t &index)
+String Tag::read_string(const Byte *bytes, ULong &index)
 {
 	String x;
 	x.size = read_short(bytes, index);
 	x.value = new char[x.size];
-	for (uint16_t i = 0; i < x.size; i++) {
+	for (UShort i = 0; i < x.size; i++) {
 		x.value[i] = read_byte(bytes, index);
 	}
 	return x;
 }
 
-List Tag::read_list(const Byte *bytes, uint64_t &index)
+List Tag::read_list(const Byte *bytes, ULong &index)
 {
 	List x;
 	x.tagid = (TagType) read_byte(bytes, index);
 	x.size = read_int(bytes, index);
 	x.value = new Tag[x.size];
-	for (uint32_t i = 0; i < x.size; i++) {
+	for (UInt i = 0; i < x.size; i++) {
 		x.value[i].read_tag(bytes, index, x.tagid);
 	}
 	return x;
@@ -572,14 +576,14 @@ List Tag::read_list(const Byte *bytes, uint64_t &index)
  * TagType typeid = TagType::Compound
  * Repeat for each entry:
  *     TagType entrytype
- *     uint16_t keylen
+ *     UShort keylen
  *     char key[keylen]
  *     TagType valtype
  *     Tag value
  * TagType entrytype = TagType::End
  */
 
-Compound *Tag::read_compound(const Byte *bytes, uint64_t &index)
+Compound *Tag::read_compound(const Byte *bytes, ULong &index)
 {
 	Compound *x = new Compound;
 	TagType tag;
@@ -592,12 +596,12 @@ Compound *Tag::read_compound(const Byte *bytes, uint64_t &index)
 	return x;
 }
 
-IntArray Tag::read_int_array(const Byte *bytes, uint64_t &index)
+IntArray Tag::read_int_array(const Byte *bytes, ULong &index)
 {
 	IntArray x;
 	x.size = read_int(bytes, index);
-	x.value = new int32_t[x.size];
-	for (uint32_t i = 0; i < x.size; i++) {
+	x.value = new Int[x.size];
+	for (UInt i = 0; i < x.size; i++) {
 		x.value[i] = read_int(bytes, index);
 	}
 	return x;
