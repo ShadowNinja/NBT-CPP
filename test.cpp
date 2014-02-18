@@ -47,12 +47,14 @@ int main(int argc, char *argv[]) {
 
 	root["foo"][1][0] = 123L;
 	assert(root["foo"][1][0].toLong() == 123L);
+	std::cout << root.dump() << std::endl;
 
 	root = NBT::TagType::Compound;  // Reset
 	root["A"] = (NBT::Byte) 0x40;
 	root["test"] = (NBT::Int) 0x12345678;	
 	root["foobar"] = std::string("<3 C++ 11");
 	std::cout << hexdump(root.write()) << std::endl;
+	std::cout << root.dump() << std::endl;
 
 	std::cout << "Success!" << std::endl;
 	return 0;

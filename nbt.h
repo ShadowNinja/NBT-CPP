@@ -85,7 +85,7 @@ class Tag {
 public:
 	Tag();
 	Tag(const Byte *bytes);
-	Tag(const TagType tag, UInt size = 1);
+	Tag(const TagType tag, UInt size = 0);
 
 	Tag(const Byte x);
 	Tag(const Short x);
@@ -110,10 +110,11 @@ public:
 
 	void copy(const Tag &t);
 	void free();
-	void setTag(const TagType tag, UInt size = 1);
+	void setTag(const TagType tag, UInt size = 0);
 
 	void read(const Byte *bytes);
 	std::string write() const;
+	std::string dump() const;
 
 	Byte       toByte();
 	Short      toShort();

@@ -2,6 +2,7 @@
 #include "nbt.h"
 #include <cstring>
 #include <cassert>
+#include <sstream>
 
 namespace NBT {
 
@@ -135,22 +136,22 @@ void Tag::setTag(const TagType tag, UInt size)
 	switch (type) {
 	case TagType::ByteArray:
 		value.v_byte_array.size = size;
-		value.v_byte_array.value = new Byte[size];
+		if (size) value.v_byte_array.value = new Byte[size];
 		break;
 	case TagType::String:
 		value.v_string.size = size;
-		value.v_string.value = new char[size];
+		if (size) value.v_string.value = new char[size];
 		break;
 	case TagType::List:
 		value.v_list.size = size;
-		value.v_list.value = new Tag[size];
+		if (size) value.v_list.value = new Tag[size];
 		break;
 	case TagType::Compound:
 		value.v_compound = new Compound;
 		break;
 	case TagType::IntArray:
 		value.v_int_array.size = size;
-		value.v_int_array.value = new Int[size];
+		if (size) value.v_int_array.value = new Int[size];
 		break;
 	default:
 		memset((void*) &value, 0, sizeof(value));
@@ -239,7 +240,7 @@ template <typename container, typename contained>
 		for (UInt i = 0; i < field->size; i++) {
 			newc.value[i] = std::move(field->value[i]);
 		}
-		delete [] field->value;
+		if (field->size) delete [] field->value;
 		*field = newc;
 	}
 }
@@ -431,6 +432,82 @@ std::string Tag::write() const
 	}
 
 	return std::string((char*) bytes, size);
+}
+
+std::string Tag::dump() const
+{
+	bool first = true;
+	std::ostringstream os;
+	switch (type) {
+	case TagType::End:
+		os << "<END>";
+		break;
+	case TagType::Byte:
+		os << (Short) value.v_byte;
+		break;
+	case TagType::Short:
+		os << value.v_short;
+		break;
+	case TagType::Int:
+		os << value.v_int;
+		break;
+	case TagType::Long:
+		os << value.v_long;
+		break;
+	case TagType::Float:
+		os << value.v_float;
+		break;
+	case TagType::Double:
+		os << value.v_double;
+		break;
+	case TagType::ByteArray:
+		os << "byte[";
+		for (UInt i = 0; i < value.v_byte_array.size; i++) {
+			if (i != 0) {
+				os << ", ";
+			}
+			os << (Short) value.v_byte_array.value[i];
+		}
+		os << ']';
+		break;
+	case TagType::String:
+		os << '"' << std::string(value.v_string.value, value.v_string.size) << '"';
+		break;
+	case TagType::List:
+		os << '[';
+		for (UInt i = 0; i < value.v_list.size; i++) {
+			if (i != 0) {
+				os << ", ";
+			}
+			os << value.v_list.value[i].dump();
+		}
+		os << ']';
+		break;
+	case TagType::Compound:
+		os << '{';
+		for (auto &it : *value.v_compound) {
+			if (!first) {
+				os << ", ";
+			}
+			first = false;
+			os << '"' << it.first << "\" = " << it.second.dump();
+		}
+		os << '}';
+		break;
+	case TagType::IntArray:
+		os << "int[";
+		for (UInt i = 0; i < value.v_int_array.size; i++) {
+			if (i != 0) {
+				os << ", ";
+			}
+			os << value.v_int_array.value[i];
+		}
+		os << ']';
+		break;
+	default:
+		os << "<UNKNOWN TAG>";
+	}
+	return os.str();
 }
 
 
