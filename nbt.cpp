@@ -14,17 +14,19 @@ namespace NBT {
  *******************/
 
 Tag::Tag() :
-	type(), value()
+	type(TagType::End),
+	value()
 {}
 
-Tag::Tag(const Byte *bytes)
+Tag::Tag(const Byte *bytes) :
+	type(TagType::End)
 {
 	read(bytes);
 }
 
-Tag::Tag(const TagType tag, UInt size)
+Tag::Tag(const TagType tag, UInt size) :
+	type(TagType::End)
 {
-	type = NBT::TagType::End;
 	setTag(tag, size);
 }
 
@@ -40,7 +42,8 @@ Tag::Tag(const std::string x)  : type(TagType::String)  {
 	memcpy((void*) value.v_string.value, (void*) x.c_str(), x.size());
 }
 
-Tag::Tag(const Tag &t)
+Tag::Tag(const Tag &t) :
+	type(TagType::End)
 {
 	copy(t);
 }
@@ -77,6 +80,7 @@ Tag & Tag::operator=(Tag &&t)
 	if (this == &t) {
 		return *this;
 	}
+	free();
 	type = t.type;
 	value = t.value;
 	t.type = TagType::End;
@@ -233,19 +237,19 @@ void Tag::free()
 {
 	switch (type) {
 	case TagType::ByteArray:
-		delete [] value.v_byte_array.value;
+		if (value.v_byte_array.size) delete [] value.v_byte_array.value;
 		break;
 	case TagType::String:
-		delete [] value.v_string.value;
+		if (value.v_string.size) delete [] value.v_string.value;
 		break;
 	case TagType::List:
-		delete [] value.v_list.value;
+		if (value.v_list.size) delete [] value.v_list.value;
 		break;
 	case TagType::Compound:
 		delete value.v_compound;
 		break;
 	case TagType::IntArray:
-		delete [] value.v_int_array.value;
+		if (value.v_int_array.size) delete [] value.v_int_array.value;
 		break;
 	}
 	type = TagType::End;  // Prevent double free
@@ -529,6 +533,7 @@ std::string Tag::dump() const
 void Tag::read(const Byte *bytes)
 {
 	ULong index = 0;
+	free();
 	TagType tag = (TagType) read_byte(bytes, index);
 	read_tag(bytes, index, tag);
 }

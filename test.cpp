@@ -35,7 +35,8 @@ int main(int argc, char *argv[]) {
 
 	assert((NBT::Byte) root["A"] == 0x40);
 	assert((NBT::Int) root["test"] == 0x12345678);
-	assert(strcmp(((NBT::String) root["foobar"]).value, "<3 C++ 11") == 0);
+	NBT::String foobar = root["foobar"];
+	assert(std::string(foobar.value, foobar.size) == "<3 C++ 11");
 
 	//assert(root.write() == data); // Data is unordered
 
