@@ -291,6 +291,7 @@ void Tag::insert(const Int &k, const Int &i)
 void Tag::insert(const Int &k, const Tag &t)
 {
 	assert(type == TagType::List);
+	assert(t.type == value.v_list.tagid);
 	UInt ak = TOABS(k, value.v_list.size);
 	ensureSize<List, Tag>(&value.v_list, ak);
 	value.v_list.value[ak] = t;
