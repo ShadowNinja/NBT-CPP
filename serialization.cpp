@@ -6,22 +6,26 @@
 #define WRITE_BYTES(b, n)\
 	memcpy((void*) (bytes + index), (void*) &(b), (n));\
 	index += (n);
-#define WRITE_BYTE(x) bytes[index++] = (Byte) x;
 
-#define WRITE_BYTE_O(x, offset)\
-	bytes[index++] = (Byte) ((x) >> (8 * (offset))) & 0xFF;
-#define WRITE_SHORT_O(x, offset)\
-	WRITE_BYTE_O(x, offset + 1)\
-	WRITE_BYTE_O(x, offset)
-#define WRITE_INT_O(x, offset)\
-	WRITE_SHORT_O(x, offset + 2)\
-	WRITE_SHORT_O(x, offset)
+#define WRITE_BYTE(x)\
+	bytes[index++] = (Byte) x;
+#define WRITE_SHORT(x)\
+	bytes[index++] = (Byte) ((x) >> 8 ) & 0xFF;\
+	bytes[index++] = (Byte)  (x)        & 0xFF;
+#define WRITE_INT(x)\
+	bytes[index++] = (Byte) ((x) >> 24) & 0xFF;\
+	bytes[index++] = (Byte) ((x) >> 16) & 0xFF;\
+	bytes[index++] = (Byte) ((x) >> 8 ) & 0xFF;\
+	bytes[index++] = (Byte)  (x)        & 0xFF;
 #define WRITE_LONG(x)\
-	WRITE_INT_O(x, 4)\
-	WRITE_INT_O(x, 0)
-
-#define WRITE_SHORT(x) WRITE_SHORT_O(x, 0)
-#define WRITE_INT(x) WRITE_INT_O(x, 0)
+	bytes[index++] = (Byte) ((x) >> 56) & 0xFF;\
+	bytes[index++] = (Byte) ((x) >> 48) & 0xFF;\
+	bytes[index++] = (Byte) ((x) >> 40) & 0xFF;\
+	bytes[index++] = (Byte) ((x) >> 32) & 0xFF;\
+	bytes[index++] = (Byte) ((x) >> 24) & 0xFF;\
+	bytes[index++] = (Byte) ((x) >> 16) & 0xFF;\
+	bytes[index++] = (Byte) ((x) >> 8 ) & 0xFF;\
+	bytes[index++] = (Byte)  (x)        & 0xFF;
 
 #define WRITE_STRING(str, size)\
 	WRITE_SHORT(size)\
