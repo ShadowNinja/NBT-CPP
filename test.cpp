@@ -3,6 +3,7 @@
 #include <string>
 #include <cstring>
 #include <sstream>
+#include <iomanip>
 #include <cassert>
 #include <chrono>
 
@@ -86,7 +87,7 @@ std::string hexdump(std::string s)
 	std::ostringstream os;
 	os << std::hex;
 	for (char c : s) {
-		os << (int) c << " ";
+		os << std::setw(2) << std::setfill('0') << (int) c << " ";
 	}
 	return os.str();
 }
