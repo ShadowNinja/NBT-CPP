@@ -139,17 +139,8 @@ public:
 protected:
 	void       read_tag      (const Byte *bytes, ULong &index, TagType tag);
 
-	Byte      read_byte      (const Byte *bytes, ULong &index);
-	int16_t   read_short     (const Byte *bytes, ULong &index);
-	int32_t   read_int       (const Byte *bytes, ULong &index);
-	int64_t   read_long      (const Byte *bytes, ULong &index);
-	float     read_float     (const Byte *bytes, ULong &index);
-	double    read_double    (const Byte *bytes, ULong &index);
-	ByteArray read_byte_array(const Byte *bytes, ULong &index);
-	String    read_string    (const Byte *bytes, ULong &index);
-	List      read_list      (const Byte *bytes, ULong &index);
-	Compound *read_compound  (const Byte *bytes, ULong &index);
-	IntArray  read_int_array (const Byte *bytes, ULong &index);
+	friend List      read_list      (const Byte *bytes, ULong &index);
+	friend Compound *read_compound  (const Byte *bytes, ULong &index);
 
 	ULong getSerializedSize() const;
 	template <typename container, typename contained>
