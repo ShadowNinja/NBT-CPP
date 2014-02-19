@@ -85,7 +85,7 @@ int main(int argc, char *argv[]) {
 std::string hexdump(std::string s)
 {
 	std::ostringstream os;
-	os << std::hex;
+	os << std::hex << std::uppercase;
 	for (char c : s) {
 		os << std::setw(2) << std::setfill('0') << (int) c << " ";
 	}
