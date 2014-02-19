@@ -656,7 +656,9 @@ List Tag::read_list(const Byte *bytes, ULong &index)
 	List x;
 	x.tagid = (TagType) read_byte(bytes, index);
 	x.size = read_int(bytes, index);
-	x.value = new Tag[x.size];
+	if (x.size > 0) {
+		x.value = new Tag[x.size];
+	}
 	for (UInt i = 0; i < x.size; i++) {
 		x.value[i].read_tag(bytes, index, x.tagid);
 	}
@@ -683,7 +685,9 @@ Compound *Tag::read_compound(const Byte *bytes, ULong &index)
 		String name = read_string(bytes, index);
 		(*x)[std::string(name.value, name.size)]
 				.read_tag(bytes, index, tag);
-		delete [] name.value;
+		if (name.size > 0) {
+			delete [] name.value;
+		}
 	}
 	return x;
 }
