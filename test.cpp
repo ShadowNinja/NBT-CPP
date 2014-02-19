@@ -4,6 +4,7 @@
 #include <cstring>
 #include <sstream>
 #include <cassert>
+#include <chrono>
 
 #include "nbt.h"
 
@@ -55,6 +56,25 @@ int main(int argc, char *argv[]) {
 	root["foobar"] = std::string("<3 C++ 11");
 	std::cout << hexdump(root.write()) << std::endl;
 	std::cout << root.dump() << std::endl;
+
+	std::cout << "Testing reading performance..." << std::endl;
+	using namespace std::chrono;
+	high_resolution_clock::time_point start = high_resolution_clock::now();
+	for (uint32_t i = 0; i < 10000; i++) {
+		root.read((NBT::Byte*) data.c_str());
+	}
+	std::cout << "Completed 10,000 reads in " <<
+			duration_cast<duration<double>>(high_resolution_clock::now() - start).count()
+			<< " seconds." << std::endl;
+
+	std::cout << "Testing writing performance..." << std::endl;
+	start = high_resolution_clock::now();
+	for (uint32_t i = 0; i < 10000; i++) {
+		root.write();
+	}
+	std::cout << "Completed 10,000 writes in " <<
+			duration_cast<duration<double>>(high_resolution_clock::now() - start).count()
+			<< " seconds." << std::endl;
 
 	std::cout << "Success!" << std::endl;
 	return 0;
