@@ -103,10 +103,23 @@ public:
 	Tag & operator=(Tag &&t);
 	Tag & operator[](const Int &k);
 	Tag & operator[](const std::string &k);
+	Tag & operator[](const char *k);
 	Tag & operator+=(const Byte &t);
 	Tag & operator+=(const Int &t);
 	Tag & operator+=(const Tag &t);
 	Tag & operator+=(Tag &&t);
+
+	operator Byte();
+	operator Short();
+	operator Int();
+	operator Long();
+	operator float();
+	operator double();
+	operator ByteArray();
+	operator String();
+	operator List();
+	operator Compound();
+	operator IntArray();
 
 	void copy(const Tag &t);
 	void free();
@@ -115,18 +128,6 @@ public:
 	void read(const Byte *bytes);
 	std::string write() const;
 	std::string dump() const;
-
-	Byte       toByte();
-	Short      toShort();
-	Int        toInt();
-	Long       toLong();
-	float      toFloat();
-	double     toDouble();
-	ByteArray &toByteArray();
-	String    &toString();
-	List      &toList();
-	Compound  &toCompound();
-	IntArray  &toIntArray();
 
 	void insert(const Int &k, const Byte &b);
 	void insert(const Int &k, const Int &i);

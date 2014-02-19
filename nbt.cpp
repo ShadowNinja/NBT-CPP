@@ -9,9 +9,9 @@ namespace NBT {
 // Converts relative negative indexes to positive indexes
 #define TOABS(x, s) (x < 0 ? s + x : x)
 
-/******************************
- * con/destructors, operators *
- ******************************/
+/*******************
+ * con/destructors *
+ *******************/
 
 Tag::Tag() :
 	type(), value()
@@ -57,6 +57,10 @@ Tag::~Tag()
 	free();
 }
 
+/*************
+ * Operators *
+ *************/
+
 Tag & Tag::operator=(const Tag &t)
 {
 	assert(this != NULL);
@@ -87,6 +91,11 @@ Tag & Tag::operator[](const Int &k)
 }
 
 Tag & Tag::operator[](const std::string &k)
+{
+	return (*value.v_compound)[k];
+}
+
+Tag & Tag::operator[](const char *k)
 {
 	return (*value.v_compound)[k];
 }
@@ -122,6 +131,24 @@ Tag & Tag::operator+=(Tag &&t)
 	value.v_list.value[value.v_list.size - 1] = std::move(t);
 	return *this;
 }
+
+
+
+/**************
+ * Converters *
+ **************/
+
+Tag::operator Byte()      { return value.v_byte; }
+Tag::operator Short()     { return value.v_short; }
+Tag::operator Int()       { return value.v_int; }
+Tag::operator Long()      { return value.v_long; }
+Tag::operator float()     { return value.v_float; }
+Tag::operator double()    { return value.v_double; }
+Tag::operator ByteArray() { return value.v_byte_array; }
+Tag::operator String()    { return value.v_string; }
+Tag::operator List()      { return value.v_list; }
+Tag::operator Compound()  { return *value.v_compound; }
+Tag::operator IntArray()  { return value.v_int_array; }
 
 
 
@@ -226,9 +253,9 @@ void Tag::free()
 
 
 
-/*****************
- * insert/append *
- *****************/
+/**********
+ * Insert *
+ **********/
 
 template <typename container, typename contained>
 	void Tag::ensureSize(container *field, UInt size)
@@ -274,24 +301,6 @@ void Tag::insert(const std::string &k, const Tag &t)
 	assert(type == TagType::Compound);
 	(*value.v_compound)[k] = t;
 }
-
-
-
-/*********
- * toX() *
- *********/
-
-Byte       Tag::toByte()      { return value.v_byte; }
-Short      Tag::toShort()     { return value.v_short; }
-Int        Tag::toInt()       { return value.v_int; }
-Long       Tag::toLong()      { return value.v_long; }
-float      Tag::toFloat()     { return value.v_float; }
-double     Tag::toDouble()    { return value.v_double; }
-ByteArray &Tag::toByteArray() { return value.v_byte_array; }
-String    &Tag::toString()    { return value.v_string; }
-List      &Tag::toList()      { return value.v_list; }
-Compound  &Tag::toCompound()  { return *value.v_compound; }
-IntArray  &Tag::toIntArray()  { return value.v_int_array; }
 
 
 

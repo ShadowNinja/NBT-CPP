@@ -32,9 +32,9 @@ int main(int argc, char *argv[]) {
 	std::cout << hexdump(data) << std::endl;
 	std::cout << hexdump(root.write()) << std::endl;
 
-	assert(root["A"].toByte() == 0x40);
-	assert(root["test"].toInt() == 0x12345678);
-	assert(strcmp(root["foobar"].toString().value, "<3 C++ 11") == 0);
+	assert((NBT::Byte) root["A"] == 0x40);
+	assert((NBT::Int) root["test"] == 0x12345678);
+	assert(strcmp(((NBT::String) root["foobar"]).value, "<3 C++ 11") == 0);
 
 	//assert(root.write() == data); // Data is unordered
 
@@ -46,7 +46,7 @@ int main(int argc, char *argv[]) {
 	root["foo"] += NBT::TagType::List;
 
 	root["foo"][1][0] = 123L;
-	assert(root["foo"][1][0].toLong() == 123L);
+	assert((NBT::Long) root["foo"][1][0] == 123L);
 	std::cout << root.dump() << std::endl;
 
 	root = NBT::TagType::Compound;  // Reset
