@@ -84,7 +84,7 @@ union Value {
 class Tag {
 public:
 	Tag();
-	Tag(const Byte *bytes);
+	Tag(const UByte *bytes);
 	Tag(const TagType tag, UInt size = 0);
 
 	Tag(const Byte x);
@@ -125,22 +125,22 @@ public:
 	void free();
 	void setTag(const TagType tag, UInt size = 0);
 
-	void read(const Byte *bytes);
+	void read(const UByte *bytes);
 	std::string write() const;
 	std::string dump() const;
 
-	void insert(const Int &k, const Byte &b);
-	void insert(const Int &k, const Int &i);
-	void insert(const Int &k, const Tag &t);
+	void insert(const Int k, const Byte b);
+	void insert(const Int k, const Int i);
+	void insert(const Int k, const Tag &t);
 	void insert(const std::string &k, const Tag &t);
 
 	TagType type;
 
 protected:
-	void       read_tag      (const Byte *bytes, ULong &index, TagType tag);
+	void readTag(const UByte *bytes, ULong &index, TagType tag);
 
-	friend List      read_list      (const Byte *bytes, ULong &index);
-	friend Compound *read_compound  (const Byte *bytes, ULong &index);
+	friend List      readList    (const UByte *bytes, ULong &index);
+	friend Compound *readCompound(const UByte *bytes, ULong &index);
 
 	ULong getSerializedSize() const;
 	template <typename container, typename contained>

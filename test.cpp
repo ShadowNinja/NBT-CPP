@@ -30,7 +30,7 @@ int main(int argc, char *argv[]) {
 			"\x00" // End
 		, 38);
 
-	NBT::Tag root((NBT::Byte*) data.c_str());
+	NBT::Tag root((NBT::UByte*) data.c_str());
 	std::cout << hexdump(data) << std::endl;
 	std::cout << hexdump(root.write()) << std::endl;
 
@@ -48,35 +48,45 @@ int main(int argc, char *argv[]) {
 	root["foo"][0] = NBT::TagType::List;
 	root["foo"] += NBT::TagType::List;
 
-	root["foo"][1][0] = 123L;
-	assert((NBT::Long) root["foo"][1][0] == 123L);
-	std::cout << root.dump() << std::endl;
+	root["foo"][1][0] = -123L;
+	assert((NBT::Long) root["foo"][1][0] == -123L);
 
 	root = NBT::TagType::Compound;  // Reset
 	root["A"] = (NBT::Byte) 0x40;
-	root["test"] = (NBT::Int) 0x12345678;	
+	root["test"] = (NBT::Int) 0x12345678;
 	root["foobar"] = std::string("<3 C++ 11");
 	std::cout << hexdump(root.write()) << std::endl;
 	std::cout << root.dump() << std::endl;
 
 	std::cout << "Testing reading performance..." << std::endl;
+	// Generate big list
+	root = NBT::TagType::IntArray;
+	// In reverse order to minimize reallocations
+	for (int32_t i = 999; i >= 0; i--) {
+		root.insert(i, (const NBT::Int) (i - 10));
+	}
+	data = root.write();
+
 	using namespace std::chrono;
 	high_resolution_clock::time_point start = high_resolution_clock::now();
-	for (uint32_t i = 0; i < 10000; i++) {
-		root.read((NBT::Byte*) data.c_str());
+	for (uint32_t i = 0; i < 1000; i++) {
+		root.read((NBT::UByte*) data.c_str());
 	}
-	std::cout << "Completed 10,000 reads in " <<
+	std::cout << "Completed 1,000 reads of 1,000 integers in " <<
 			duration_cast<duration<double>>(high_resolution_clock::now() - start).count()
 			<< " seconds." << std::endl;
 
 	std::cout << "Testing writing performance..." << std::endl;
 	start = high_resolution_clock::now();
-	for (uint32_t i = 0; i < 10000; i++) {
+	for (uint32_t i = 0; i < 1000; i++) {
 		root.write();
 	}
-	std::cout << "Completed 10,000 writes in " <<
+	std::cout << "Completed 1,000 writes of 1,000 integers in " <<
 			duration_cast<duration<double>>(high_resolution_clock::now() - start).count()
 			<< " seconds." << std::endl;
+
+	std::cout << "Integer array write: " << hexdump(root.write()).substr(0, 100) << "..." << std::endl;
+	std::cout << "Integer array dump: "  << root.dump().substr(0, 100) << "..." << std::endl;
 
 	std::cout << "Success!" << std::endl;
 	return 0;
@@ -87,7 +97,7 @@ std::string hexdump(std::string s)
 	std::ostringstream os;
 	os << std::hex << std::uppercase;
 	for (char c : s) {
-		os << std::setw(2) << std::setfill('0') << (int) c << " ";
+		os << std::setw(2) << std::setfill('0') << (int16_t) c << " ";
 	}
 	return os.str();
 }

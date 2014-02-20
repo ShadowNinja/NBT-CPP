@@ -5,150 +5,149 @@
 
 namespace NBT {
 
-Byte      read_byte      (const Byte *bytes, ULong &index);
-int16_t   read_short     (const Byte *bytes, ULong &index);
-int32_t   read_int       (const Byte *bytes, ULong &index);
-int64_t   read_long      (const Byte *bytes, ULong &index);
-float     read_float     (const Byte *bytes, ULong &index);
-double    read_double    (const Byte *bytes, ULong &index);
-ByteArray read_byte_array(const Byte *bytes, ULong &index);
-String    read_string    (const Byte *bytes, ULong &index);
-List      read_list      (const Byte *bytes, ULong &index);
-Compound *read_compound  (const Byte *bytes, ULong &index);
-IntArray  read_int_array (const Byte *bytes, ULong &index);
+inline UByte  readByte  (const UByte *bytes, ULong &index);
+inline UShort readShort (const UByte *bytes, ULong &index);
+inline UInt   readInt   (const UByte *bytes, ULong &index);
+inline ULong  readLong  (const UByte *bytes, ULong &index);
+inline float  readFloat (const UByte *bytes, ULong &index);
+inline double readDouble(const UByte *bytes, ULong &index);
+ByteArray  readByteArray(const UByte *bytes, ULong &index);
+String     readString   (const UByte *bytes, ULong &index);
+List       readList     (const UByte *bytes, ULong &index);
+Compound * readCompound (const UByte *bytes, ULong &index);
+IntArray   readIntArray (const UByte *bytes, ULong &index);
 
 
-void Tag::read(const Byte *bytes)
+void Tag::read(const UByte *bytes)
 {
 	ULong index = 0;
 	free();
-	TagType tag = (TagType) read_byte(bytes, index);
-	read_tag(bytes, index, tag);
+	TagType tag = (TagType) readByte(bytes, index);
+	readTag(bytes, index, tag);
 }
 
-void Tag::read_tag(const Byte *bytes, ULong &index, TagType tag)
+void Tag::readTag(const UByte *bytes, ULong &index, TagType tag)
 {
 	type = tag;
 	switch (tag) {
 	case TagType::End:
 		break;
 	case TagType::Byte:
-		value.v_byte = read_byte(bytes, index);
+		value.v_byte = readByte(bytes, index);
 		break;
 	case TagType::Short:
-		value.v_short = read_short(bytes, index);
+		value.v_short = readShort(bytes, index);
 		break;
 	case TagType::Int:
-		value.v_int = read_int(bytes, index);
+		value.v_int = readInt(bytes, index);
 		break;
 	case TagType::Long:
-		value.v_long = read_long(bytes, index);
+		value.v_long = readLong(bytes, index);
 		break;
 	case TagType::Float:
-		value.v_float = read_float(bytes, index);
+		value.v_float = readFloat(bytes, index);
 		break;
 	case TagType::Double:
-		value.v_double = read_double(bytes, index);
+		value.v_double = readDouble(bytes, index);
 		break;
 	case TagType::ByteArray:
-		value.v_byte_array = read_byte_array(bytes, index);
+		value.v_byte_array = readByteArray(bytes, index);
 		break;
 	case TagType::String:
-		value.v_string = read_string(bytes, index);
+		value.v_string = readString(bytes, index);
 		break;
 	case TagType::List:
-		value.v_list = read_list(bytes, index);
+		value.v_list = readList(bytes, index);
 		break;
 	case TagType::Compound:
-		value.v_compound = read_compound(bytes, index);
+		value.v_compound = readCompound(bytes, index);
 		break;
 	case TagType::IntArray:
-		value.v_int_array = read_int_array(bytes, index);
+		value.v_int_array = readIntArray(bytes, index);
 		break;
 	default:
 		throw "Invalid tag type!";
 	}
 }
 
-inline Byte read_byte(const Byte *bytes, ULong &index)
+inline UByte readByte(const UByte *bytes, ULong &index)
 {
 	return bytes[index++];
 }
 
-inline Short read_short(const Byte *bytes, ULong &index)
+inline UShort readShort(const UByte *bytes, ULong &index)
 {
-	return ((Short) bytes[index++] << 8)
-			| ((Short) bytes[index++]);
+	return (bytes[index++] << 8) | (bytes[index++]);
 }
 
-inline Int read_int(const Byte *bytes, ULong &index)
+inline UInt readInt(const UByte *bytes, ULong &index)
 {
-	return ((Int) bytes[index++] << 24)
-			| ((Int) bytes[index++] << 16)
-			| ((Int) bytes[index++] << 8)
-			| ((Int) bytes[index++]);
+	return ((UInt) bytes[index++] << 24)
+			| ((UInt) bytes[index++] << 16)
+			| ((UInt) bytes[index++] << 8)
+			| ((UInt) bytes[index++]);
 }
 
-inline Long read_long(const Byte *bytes, ULong &index)
+inline ULong readLong(const UByte *bytes, ULong &index)
 {
-	return ((Long) bytes[index++] << 56)
-			| ((Long) bytes[index++] << 48)
-			| ((Long) bytes[index++] << 40)
-			| ((Long) bytes[index++] << 32)
-			| ((Long) bytes[index++] << 24)
-			| ((Long) bytes[index++] << 16)
-			| ((Long) bytes[index++] << 8 )
-			| ((Long) bytes[index++]);
+	return ((ULong) bytes[index++] << 56)
+			| ((ULong) bytes[index++] << 48)
+			| ((ULong) bytes[index++] << 40)
+			| ((ULong) bytes[index++] << 32)
+			| ((ULong) bytes[index++] << 24)
+			| ((ULong) bytes[index++] << 16)
+			| ((ULong) bytes[index++] << 8 )
+			| ((ULong) bytes[index++]);
 }
 
-inline float read_float(const Byte *bytes, ULong &index)
+inline float readFloat(const UByte *bytes, ULong &index)
 {
 	float x;
-	memcpy((void*) &x, (void*) (bytes + index), 4);
-	index += 4;
+	memcpy((void*) &x, (void*) (bytes + index), sizeof(float));
+	index += sizeof(float);
 	return x;
 }
 
-inline double read_double(const Byte *bytes, ULong &index)
+inline double readDouble(const UByte *bytes, ULong &index)
 {
 	double x;
-	memcpy((void*) &x, (void*) (bytes + index), 8);
-	index += 8;
+	memcpy((void*) &x, (void*) (bytes + index), sizeof(double));
+	index += sizeof(double);
 	return x;
 }
 
-ByteArray read_byte_array(const Byte *bytes, ULong &index)
+ByteArray readByteArray(const UByte *bytes, ULong &index)
 {
 	ByteArray x;
-	x.size = read_int(bytes, index);
+	x.size = readInt(bytes, index);
 	x.value = new Byte[x.size];
 	for (UInt i = 0; i < x.size; i++) {
-		x.value[i] = read_byte(bytes, index);
+		x.value[i] = readByte(bytes, index);
 	}
 	return x;
 }
 
-String read_string(const Byte *bytes, ULong &index)
+String readString(const UByte *bytes, ULong &index)
 {
 	String x;
-	x.size = read_short(bytes, index);
+	x.size = readShort(bytes, index);
 	x.value = new char[x.size];
 	for (UShort i = 0; i < x.size; i++) {
-		x.value[i] = read_byte(bytes, index);
+		x.value[i] = readByte(bytes, index);
 	}
 	return x;
 }
 
-List read_list(const Byte *bytes, ULong &index)
+List readList(const UByte *bytes, ULong &index)
 {
 	List x;
-	x.tagid = (TagType) read_byte(bytes, index);
-	x.size = read_int(bytes, index);
+	x.tagid = (TagType) readByte(bytes, index);
+	x.size = readInt(bytes, index);
 	if (x.size > 0) {
 		x.value = new Tag[x.size];
 	}
 	for (UInt i = 0; i < x.size; i++) {
-		x.value[i].read_tag(bytes, index, x.tagid);
+		x.value[i].readTag(bytes, index, x.tagid);
 	}
 	return x;
 }
@@ -165,14 +164,14 @@ List read_list(const Byte *bytes, ULong &index)
  * TagType entrytype = TagType::End
  */
 
-Compound *read_compound(const Byte *bytes, ULong &index)
+Compound *readCompound(const UByte *bytes, ULong &index)
 {
 	Compound *x = new Compound;
 	TagType tag;
 	while ((tag = (TagType) bytes[index++]) != TagType::End) {
-		String name = read_string(bytes, index);
+		String name = readString(bytes, index);
 		(*x)[std::string(name.value, name.size)]
-				.read_tag(bytes, index, tag);
+				.readTag(bytes, index, tag);
 		if (name.size > 0) {
 			delete [] name.value;
 		}
@@ -180,13 +179,13 @@ Compound *read_compound(const Byte *bytes, ULong &index)
 	return x;
 }
 
-IntArray read_int_array(const Byte *bytes, ULong &index)
+IntArray readIntArray(const UByte *bytes, ULong &index)
 {
 	IntArray x;
-	x.size = read_int(bytes, index);
-	x.value = new Int[x.size];
+	x.size = readShort(bytes, index);
+	if (x.size > 0) x.value = new Int[x.size];
 	for (UInt i = 0; i < x.size; i++) {
-		x.value[i] = read_int(bytes, index);
+		x.value[i] = readInt(bytes, index);
 	}
 	return x;
 }

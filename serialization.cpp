@@ -40,24 +40,24 @@ ULong Tag::getSerializedSize() const
 	ULong size = 0;
 	ULong i = 0;
 	switch (type) {
-	case TagType::Byte: return 1;
-	case TagType::Short: return 2;
-	case TagType::Int: return 4;
-	case TagType::Long: return 8;
-	case TagType::Float: return 4;
-	case TagType::Double: return 8;
+	case TagType::Byte: return sizeof(Byte);
+	case TagType::Short: return sizeof(Short);
+	case TagType::Int: return sizeof(Int);
+	case TagType::Long: return sizeof(Long);
+	case TagType::Float: return sizeof(float);
+	case TagType::Double: return sizeof(double);
 	case TagType::ByteArray:
-		return 4 //Size field
+		return sizeof(UInt) //Size field
 			+ value.v_byte_array.size; // Array size
 	case TagType::String:
-		return 2 // Size field
+		return sizeof(UShort) // Size field
 			+ value.v_string.size; //String siza
 	case TagType::List:
 		for (; i < value.v_list.size; i++) {
 			size += value.v_list.value[i].getSerializedSize();
 		}
-		return 1 // TagID
-			+ 4 // Size
+		return sizeof(UByte) // TagID
+			+ sizeof(UInt) // Size
 			+ size; // Items
 	case TagType::Compound:
 		for (auto &it : *value.v_compound) {
@@ -67,10 +67,10 @@ ULong Tag::getSerializedSize() const
 				+ it.second.getSerializedSize(); // Value
 		}
 		return size
-			+ 1; // End tag
+			+ sizeof(UByte); // End tag
 	case TagType::IntArray:
-		return 4 // Size
-			+ value.v_int_array.size * 4; // Ints
+		return sizeof(Short) // Size
+			+ value.v_int_array.size * sizeof(Int); // Ints
 	}
 	return 0;
 }
@@ -79,8 +79,8 @@ std::string Tag::write() const
 {
 	ULong index = 0;
 	UInt i = 0;
-	ULong size = getSerializedSize() + 1;  // Add tag size
-	Byte bytes[size];
+	ULong size = getSerializedSize() + sizeof(UByte);  // Add tag size
+	UByte bytes[size];
 	std::string str;
 
 	WRITE_BYTE(type)
@@ -99,10 +99,10 @@ std::string Tag::write() const
 		WRITE_LONG(value.v_long)
 		break;
 	case TagType::Float:
-		WRITE_BYTES(value.v_float, 4);
+		WRITE_BYTES(value.v_float, sizeof(float));
 		break;
 	case TagType::Double:
-		WRITE_BYTES(value.v_double, 8);
+		WRITE_BYTES(value.v_double, sizeof(double));
 		break;
 	case TagType::ByteArray:
 		WRITE_INT(value.v_byte_array.size)
@@ -128,15 +128,17 @@ std::string Tag::write() const
 			str = it.second.write();
 			// Skip first byte (tag id)
 			memcpy((void*) (bytes + index),
-				(void*) (str.c_str() + 1), str.size() - 1);
-			index += str.size() - 1;
+				(void*) (str.c_str() + sizeof(UByte)), str.size() - sizeof(UByte));
+			index += str.size() - sizeof(UByte);
 		}
 		WRITE_BYTE(TagType::End);
 		break;
 	case TagType::IntArray:
 		WRITE_SHORT(value.v_int_array.size)
-		WRITE_BYTES(value.v_int_array.value,
-				value.v_int_array.size * sizeof(Int))
+		// Can't use memcpy, or you have to account for endianess
+		for (; i < value.v_int_array.size; i++) {
+			WRITE_INT(value.v_int_array.value[i])
+		}
 		break;
 	}
 
