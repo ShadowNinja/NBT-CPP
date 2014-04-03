@@ -8,6 +8,7 @@
 #include <chrono>
 
 #include "nbt.h"
+#include "compression.h"
 
 std::string hexdump(std::string s);
 
@@ -30,9 +31,15 @@ int main(int argc, char *argv[]) {
 			"\x00" // End
 		, 38);
 
-	NBT::Tag root((NBT::UByte*) data.c_str());
-	std::cout << hexdump(data) << std::endl;
-	std::cout << hexdump(root.write()) << std::endl;
+	NBT::Tag root((NBT::UByte *) data.c_str());
+	std::cout << "Original: " << hexdump(data) << std::endl;
+	std::cout << "Written:  " << hexdump(root.write()) << std::endl;
+
+	NBT::ustring udata = NBT::ustring((const unsigned char *) data.data(), data.size());
+	NBT::ustring comp = NBT::compress(udata, 1);
+	std::cout << "Compressed: " << hexdump(std::string((const char *) comp.data(), comp.size())) << std::endl;
+	NBT::ustring decomp = NBT::decompress(comp);
+	assert(decomp == udata);
 
 	assert((NBT::Byte) root["A"] == 0x40);
 	assert((NBT::Int) root["test"] == 0x12345678);
@@ -55,8 +62,8 @@ int main(int argc, char *argv[]) {
 	root["A"] = (NBT::Byte) 0x40;
 	root["test"] = (NBT::Int) 0x12345678;
 	root["foobar"] = std::string("<3 C++ 11");
-	std::cout << hexdump(root.write()) << std::endl;
-	std::cout << root.dump() << std::endl;
+	std::cout << "Manual:   " << hexdump(root.write()) << std::endl;
+	std::cout << "Manual dump: " << root.dump() << std::endl;
 
 	std::cout << "Testing reading performance..." << std::endl;
 	// Generate big list
