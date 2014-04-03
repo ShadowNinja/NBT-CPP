@@ -3,12 +3,12 @@
 
 namespace NBT {
 
-extern inline void writeBytes(UByte * bytes, ULong & index, const UByte * write, UInt size);
-extern inline void writeByte(UByte * bytes, ULong & index, UByte b);
-extern inline void writeShort(UByte * bytes, ULong & index, UShort s);
-extern inline void writeInt(UByte * bytes, ULong & index, UInt i);
-extern inline void writeLong(UByte * bytes, ULong & index, ULong l);
-extern inline void writeString(UByte * bytes, ULong & index, const char * str, UInt size);
+extern inline void writeBytes(UByte * bytes, const UByte * write, UInt size);
+extern inline void writeByte(UByte * bytes, UByte b);
+extern inline void writeShort(UByte * bytes, UShort s);
+extern inline void writeInt(UByte * bytes, UInt i);
+extern inline void writeLong(UByte * bytes, ULong l);
+extern inline void writeString(UByte * bytes, const char * str, UShort size);
 
 
 extern inline UByte  readByte  (const UByte *bytes, ULong &index);

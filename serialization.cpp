@@ -62,61 +62,78 @@ std::string Tag::write() const
 	UByte bytes[size];
 	std::string str;
 
-	writeByte(bytes, index, (UByte) type);
+	writeByte((bytes + index++), (UByte) type);
 
 	switch (type) {
 	case TagType::Byte:
-		writeByte(bytes, index, value.v_byte);
+		writeByte((bytes + index), value.v_byte);
+		index += sizeof(Byte);
 		break;
 	case TagType::Short:
-		writeShort(bytes, index, value.v_short);
+		writeShort(bytes + index, value.v_short);
+		index += sizeof(Short);
 		break;
 	case TagType::Int:
-		writeInt(bytes, index, value.v_int);
+		writeInt(bytes + index, value.v_int);
+		index += sizeof(Int);
 		break;
 	case TagType::Long:
-		writeLong(bytes, index, value.v_long);
+		writeLong(bytes + index, value.v_long);
+		index += sizeof(Long);
 		break;
 	case TagType::Float:
-		writeBytes(bytes, index, (UByte *) &value.v_float, sizeof(float));
+		writeBytes(bytes + index, (UByte *) &value.v_float, sizeof(float));
+		index += sizeof(float);
 		break;
 	case TagType::Double:
-		writeBytes(bytes, index, (UByte *) &value.v_double, sizeof(double));
+		writeBytes(bytes + index, (UByte *) &value.v_double, sizeof(double));
+		index += sizeof(double);
 		break;
 	case TagType::ByteArray:
-		writeInt(bytes, index, value.v_byte_array.size);
-		writeBytes(bytes, index, (UByte *) value.v_byte_array.value,
+		writeInt(bytes + index, value.v_byte_array.size);
+		index += sizeof(Int);
+		writeBytes(bytes + index, (UByte *) value.v_byte_array.value,
 				value.v_byte_array.size);
+		index += value.v_byte_array.size;
 		break;
 	case TagType::String:
-		writeString(bytes, index, value.v_string.value, value.v_string.size);
+		writeString(bytes + index, value.v_string.value, value.v_string.size);
+		index += sizeof(Short) + value.v_string.size;
 		break;
 	case TagType::List:
-		writeByte(bytes, index, (UByte) value.v_list.tagid);
-		writeInt(bytes, index, value.v_list.size);
+		writeByte(bytes + index, (UByte) value.v_list.tagid);
+		index += sizeof(Byte);
+		writeInt(bytes + index, value.v_list.size);
+		index += sizeof(Int);
 		for (; i < value.v_list.size; i++) {
 			str = value.v_list.value[i].write();
-			strncpy((char*) (bytes + index), str.c_str(), str.size());
+			writeBytes(bytes + index, (const UByte *) str.data(), str.size());
 			index += str.size();
 		}
 		break;
 	case TagType::Compound:
 		for (auto &it : *value.v_compound) {
-			writeByte(bytes, index, (UByte) it.second.type);
-			writeString(bytes, index, it.first.c_str(), it.first.size());
+			writeByte(bytes + index, (UByte) it.second.type);
+			index += sizeof(Byte);
+			writeString(bytes + index, it.first.data(), it.first.size());
+			index += sizeof(Short) + it.first.size();
 			str = it.second.write();
 			// Skip first byte (tag id)
-			memcpy((void *) (bytes + index),
-				(void *) (str.data() + sizeof(UByte)), str.size() - sizeof(UByte));
+			writeBytes(bytes + index,
+				(const UByte *) (str.data() + sizeof(UByte)),
+				str.size() - sizeof(UByte));
 			index += str.size() - sizeof(UByte);
 		}
-		writeByte(bytes, index, (UByte) TagType::End);
+		writeByte(bytes + index, (UByte) TagType::End);
+		index += sizeof(Byte);
 		break;
 	case TagType::IntArray:
-		writeShort(bytes, index, value.v_int_array.size);
+		writeShort(bytes + index, value.v_int_array.size);
+		index += sizeof(Short);
 		// Can't use memcpy, or you have to account for endianess
 		for (; i < value.v_int_array.size; i++) {
-			writeInt(bytes, index, value.v_int_array.value[i]);
+			writeInt(bytes + index, value.v_int_array.value[i]);
+			index += sizeof(Int);
 		}
 		break;
 	}
@@ -202,52 +219,51 @@ std::string Tag::dump() const
 }
 
 
-inline void writeBytes(UByte * bytes, ULong & index, const UByte * write, UInt size)
+inline void writeBytes(UByte * bytes, const UByte * write, UInt size)
 {
-	memcpy((void *) (bytes + index), (void *) write, size);\
-	index += size;
+	memcpy((void *) bytes, (void *) write, size);
 }
 
 
-inline void writeByte(UByte * bytes, ULong & index, UByte b)
+inline void writeByte(UByte * bytes, UByte b)
 {
-	bytes[index++] = (UByte) b;
+	bytes[0] = b;
 }
 
 
-inline void writeShort(UByte * bytes, ULong & index, UShort s)
+inline void writeShort(UByte * bytes, UShort s)
 {
-	bytes[index++] = (UByte) (s >> 8) & 0xFF;
-	bytes[index++] = (UByte)  s       & 0xFF;
+	bytes[0] = (UByte) (s >> 8) & 0xFF;
+	bytes[1] = (UByte)  s       & 0xFF;
 }
 
 
-inline void writeInt(UByte * bytes, ULong & index, UInt i)
+inline void writeInt(UByte * bytes, UInt i)
 {
-	bytes[index++] = (UByte) (i >> 24) & 0xFF;
-	bytes[index++] = (UByte) (i >> 16) & 0xFF;
-	bytes[index++] = (UByte) (i >> 8 ) & 0xFF;
-	bytes[index++] = (UByte)  i        & 0xFF;
+	bytes[0] = (UByte) (i >> 24) & 0xFF;
+	bytes[1] = (UByte) (i >> 16) & 0xFF;
+	bytes[2] = (UByte) (i >> 8 ) & 0xFF;
+	bytes[3] = (UByte)  i        & 0xFF;
 }
 
 
-inline void writeLong(UByte * bytes, ULong & index, ULong l)
+inline void writeLong(UByte * bytes, ULong l)
 {
-	bytes[index++] = (UByte) (l >> 56) & 0xFF;
-	bytes[index++] = (UByte) (l >> 48) & 0xFF;
-	bytes[index++] = (UByte) (l >> 40) & 0xFF;
-	bytes[index++] = (UByte) (l >> 32) & 0xFF;
-	bytes[index++] = (UByte) (l >> 24) & 0xFF;
-	bytes[index++] = (UByte) (l >> 16) & 0xFF;
-	bytes[index++] = (UByte) (l >> 8 ) & 0xFF;
-	bytes[index++] = (UByte)  l        & 0xFF;
+	bytes[0] = (UByte) (l >> 56) & 0xFF;
+	bytes[1] = (UByte) (l >> 48) & 0xFF;
+	bytes[2] = (UByte) (l >> 40) & 0xFF;
+	bytes[3] = (UByte) (l >> 32) & 0xFF;
+	bytes[4] = (UByte) (l >> 24) & 0xFF;
+	bytes[5] = (UByte) (l >> 16) & 0xFF;
+	bytes[6] = (UByte) (l >> 8 ) & 0xFF;
+	bytes[7] = (UByte)  l        & 0xFF;
 }
 
 
-inline void writeString(UByte * bytes, ULong & index, const char * str, UInt size)
+inline void writeString(UByte * bytes, const char * str, UShort size)
 {
-	writeShort(bytes, index, size);
-	writeBytes(bytes, index, (const UByte *) str, size);
+	writeShort(bytes, size);
+	writeBytes(bytes + sizeof(Short), (const UByte *) str, size);
 }
 
 
