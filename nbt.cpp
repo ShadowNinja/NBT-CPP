@@ -1,7 +1,8 @@
 
-#include "nbt.h"
 #include <cstring>
 #include <cassert>
+
+#include "nbt.h"
 
 namespace NBT {
 
