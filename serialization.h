@@ -11,17 +11,17 @@ extern inline void writeLong(UByte * bytes, ULong l);
 extern inline void writeString(UByte * bytes, const char * str, UShort size);
 
 
-extern inline UByte  readByte  (const UByte *bytes, ULong &index);
-extern inline UShort readShort (const UByte *bytes, ULong &index);
-extern inline UInt   readInt   (const UByte *bytes, ULong &index);
-extern inline ULong  readLong  (const UByte *bytes, ULong &index);
-extern inline float  readFloat (const UByte *bytes, ULong &index);
-extern inline double readDouble(const UByte *bytes, ULong &index);
-extern ByteArray  readByteArray(const UByte *bytes, ULong &index);
-extern String     readString   (const UByte *bytes, ULong &index);
-extern List       readList     (const UByte *bytes, ULong &index);
-extern Compound * readCompound (const UByte *bytes, ULong &index);
-extern IntArray   readIntArray (const UByte *bytes, ULong &index);
+extern inline UByte  readByte  (const UByte * bytes);
+extern inline UShort readShort (const UByte * bytes);
+extern inline UInt   readInt   (const UByte * bytes);
+extern inline ULong  readLong  (const UByte * bytes);
+extern inline float  readFloat (const UByte * bytes);
+extern inline double readDouble(const UByte * bytes);
+extern ByteArray  readByteArray(const UByte * bytes, ULong & index);
+extern String     readString   (const UByte * bytes, ULong & index);
+extern List       readList     (const UByte * bytes, ULong & index);
+extern Compound * readCompound (const UByte * bytes, ULong & index);
+extern IntArray   readIntArray (const UByte * bytes, ULong & index);
 
 } // namespace NBT
 

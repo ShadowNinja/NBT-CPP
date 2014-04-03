@@ -273,9 +273,9 @@ inline void writeString(UByte * bytes, const char * str, UShort size)
 
 void Tag::read(const UByte *bytes)
 {
-	ULong index = 0;
 	free();
-	TagType tag = (TagType) readByte(bytes, index);
+	TagType tag = (TagType) readByte(bytes);
+	ULong index = sizeof(Byte);
 	readTag(bytes, index, tag);
 }
 
@@ -287,22 +287,28 @@ void Tag::readTag(const UByte *bytes, ULong &index, TagType tag)
 	case TagType::End:
 		break;
 	case TagType::Byte:
-		value.v_byte = readByte(bytes, index);
+		value.v_byte = readByte(bytes + index);
+		index += sizeof(Byte);
 		break;
 	case TagType::Short:
-		value.v_short = readShort(bytes, index);
+		value.v_short = readShort(bytes + index);
+		index += sizeof(Short);
 		break;
 	case TagType::Int:
-		value.v_int = readInt(bytes, index);
+		value.v_int = readInt(bytes + index);
+		index += sizeof(Int);
 		break;
 	case TagType::Long:
-		value.v_long = readLong(bytes, index);
+		value.v_long = readLong(bytes + index);
+		index += sizeof(Long);
 		break;
 	case TagType::Float:
-		value.v_float = readFloat(bytes, index);
+		value.v_float = readFloat(bytes + index);
+		index += sizeof(float);
 		break;
 	case TagType::Double:
-		value.v_double = readDouble(bytes, index);
+		value.v_double = readDouble(bytes + index);
+		index += sizeof(double);
 		break;
 	case TagType::ByteArray:
 		value.v_byte_array = readByteArray(bytes, index);
@@ -325,54 +331,52 @@ void Tag::readTag(const UByte *bytes, ULong &index, TagType tag)
 }
 
 
-inline UByte readByte(const UByte *bytes, ULong &index)
+inline UByte readByte(const UByte * bytes)
 {
-	return bytes[index++];
+	return bytes[0];
 }
 
 
-inline UShort readShort(const UByte *bytes, ULong &index)
+inline UShort readShort(const UByte * bytes)
 {
-	return (bytes[index++] << 8) | (bytes[index++]);
+	return ((UShort) bytes[0] << 8) | ((UShort) bytes[1]);
 }
 
 
-inline UInt readInt(const UByte *bytes, ULong &index)
+inline UInt readInt(const UByte * bytes)
 {
-	return ((UInt) bytes[index++] << 24)
-			| ((UInt) bytes[index++] << 16)
-			| ((UInt) bytes[index++] << 8)
-			| ((UInt) bytes[index++]);
+	return ((UInt) bytes[0] << 24)
+			| ((UInt) bytes[1] << 16)
+			| ((UInt) bytes[2] << 8)
+			| ((UInt) bytes[3]);
 }
 
 
-inline ULong readLong(const UByte *bytes, ULong &index)
+inline ULong readLong(const UByte *bytes)
 {
-	return ((ULong) bytes[index++] << 56)
-			| ((ULong) bytes[index++] << 48)
-			| ((ULong) bytes[index++] << 40)
-			| ((ULong) bytes[index++] << 32)
-			| ((ULong) bytes[index++] << 24)
-			| ((ULong) bytes[index++] << 16)
-			| ((ULong) bytes[index++] << 8 )
-			| ((ULong) bytes[index++]);
+	return ((ULong) bytes[0] << 56)
+			| ((ULong) bytes[1] << 48)
+			| ((ULong) bytes[2] << 40)
+			| ((ULong) bytes[3] << 32)
+			| ((ULong) bytes[4] << 24)
+			| ((ULong) bytes[5] << 16)
+			| ((ULong) bytes[6] << 8 )
+			| ((ULong) bytes[7]);
 }
 
 
-inline float readFloat(const UByte *bytes, ULong &index)
+inline float readFloat(const UByte *bytes)
 {
 	float x;
-	memcpy((void*) &x, (void*) (bytes + index), sizeof(float));
-	index += sizeof(float);
+	memcpy((void*) &x, (void *) bytes, sizeof(float));
 	return x;
 }
 
 
-inline double readDouble(const UByte *bytes, ULong &index)
+inline double readDouble(const UByte *bytes)
 {
 	double x;
-	memcpy((void*) &x, (void*) (bytes + index), sizeof(double));
-	index += sizeof(double);
+	memcpy((void*) &x, (void *) bytes, sizeof(double));
 	return x;
 }
 
@@ -380,10 +384,12 @@ inline double readDouble(const UByte *bytes, ULong &index)
 ByteArray readByteArray(const UByte *bytes, ULong &index)
 {
 	ByteArray x;
-	x.size = readInt(bytes, index);
+	x.size = readInt(bytes + index);
+	index += sizeof(Int);
 	x.value = new Byte[x.size];
 	for (UInt i = 0; i < x.size; i++) {
-		x.value[i] = readByte(bytes, index);
+		x.value[i] = readByte(bytes + index);
+		index += sizeof(Byte);
 	}
 	return x;
 }
@@ -392,10 +398,12 @@ ByteArray readByteArray(const UByte *bytes, ULong &index)
 String readString(const UByte *bytes, ULong &index)
 {
 	String x;
-	x.size = readShort(bytes, index);
+	x.size = readShort(bytes + index);
+	index += sizeof(Short);
 	x.value = new char[x.size];
 	for (UShort i = 0; i < x.size; i++) {
-		x.value[i] = readByte(bytes, index);
+		x.value[i] = readByte(bytes + index);
+		index += sizeof(Byte);
 	}
 	return x;
 }
@@ -404,8 +412,10 @@ String readString(const UByte *bytes, ULong &index)
 List readList(const UByte *bytes, ULong &index)
 {
 	List x;
-	x.tagid = (TagType) readByte(bytes, index);
-	x.size = readInt(bytes, index);
+	x.tagid = (TagType) readByte(bytes + index);
+	index += sizeof(Byte);
+	x.size = readInt(bytes + index);
+	index += sizeof(Int);
 	if (x.size > 0) {
 		x.value = new Tag[x.size];
 	}
@@ -447,10 +457,14 @@ Compound *readCompound(const UByte *bytes, ULong &index)
 IntArray readIntArray(const UByte *bytes, ULong &index)
 {
 	IntArray x;
-	x.size = readShort(bytes, index);
-	if (x.size > 0) x.value = new Int[x.size];
+	x.size = readShort(bytes + index);
+	index += sizeof(Short);
+	if (x.size > 0) {
+		x.value = new Int[x.size];
+	}
 	for (UInt i = 0; i < x.size; i++) {
-		x.value[i] = readInt(bytes, index);
+		x.value[i] = readInt(bytes + index);
+		index += sizeof(Int);
 	}
 	return x;
 }
