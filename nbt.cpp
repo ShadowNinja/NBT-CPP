@@ -251,6 +251,8 @@ void Tag::free()
 	case TagType::IntArray:
 		if (value.v_int_array.size) delete [] value.v_int_array.value;
 		break;
+	default:
+		break;
 	}
 	type = TagType::End;  // Prevent double free
 }

@@ -18,6 +18,7 @@ ULong Tag::getSerializedSize() const
 	ULong size = 0;
 	ULong i = 0;
 	switch (type) {
+	case TagType::End: return 0;
 	case TagType::Byte: return sizeof(Byte);
 	case TagType::Short: return sizeof(Short);
 	case TagType::Int: return sizeof(Int);
@@ -65,6 +66,8 @@ std::string Tag::write() const
 	writeByte((bytes + index++), (UByte) type);
 
 	switch (type) {
+	case TagType::End:
+		break;
 	case TagType::Byte:
 		writeByte((bytes + index), value.v_byte);
 		index += sizeof(Byte);
