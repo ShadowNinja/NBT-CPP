@@ -24,10 +24,10 @@ Tag::Tag(const UByte *bytes) :
 	read(bytes);
 }
 
-Tag::Tag(const TagType tag, UInt size) :
+Tag::Tag(const TagType tag, UInt size, TagType subtype) :
 	type(TagType::End)
 {
-	setTag(tag, size);
+	setTag(tag, size, subtype);
 }
 
 Tag::Tag(Byte x)   : type(TagType::Byte)    { value.v_byte = x; }
@@ -160,7 +160,7 @@ Tag::operator IntArray()  { return value.v_int_array; }
  * Misc *
  ********/
 
-void Tag::setTag(const TagType tag, UInt size)
+void Tag::setTag(const TagType tag, UInt size, TagType subtype)
 {
 	free();
 	type = tag;
@@ -175,6 +175,7 @@ void Tag::setTag(const TagType tag, UInt size)
 		break;
 	case TagType::List:
 		value.v_list.size = size;
+		value.v_list.tagid = subtype;
 		if (size) value.v_list.value = new Tag[size];
 		break;
 	case TagType::Compound:
@@ -297,7 +298,11 @@ void Tag::insert(const Int k, const Int i)
 void Tag::insert(const Int k, const Tag &t)
 {
 	assert(type == TagType::List);
-	assert(t.type == value.v_list.tagid);
+	if (value.v_list.size > 0 && value.v_list.tagid != TagType::End) {
+		assert(t.type == value.v_list.tagid);
+	} else {
+		value.v_list.tagid = t.type;
+	}
 	UInt ak = TOABS(k, value.v_list.size);
 	ensureSize<List, Tag>(&value.v_list, ak + 1);
 	value.v_list.value[ak] = t;

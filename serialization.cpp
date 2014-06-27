@@ -6,7 +6,26 @@
 #include "serialization.h"
 
 
+#define NBT_BIG_ENDIAN    0x01020304UL
+#define NBT_LITTLE_ENDIAN 0x04030201UL
+
 namespace NBT {
+
+constexpr UInt byteOrder() {
+	return ((union {UByte bytes[4]; UInt i;}) {{1, 2, 3, 4}}).i;
+}
+
+
+inline void swapBytes(UByte * bytes, UByte len)
+{
+	UByte tmp;
+	for (UByte i = 0; i < len / 2; i++) {
+		tmp = bytes[len - i - 1];
+		bytes[len - i - 1] = bytes[i];
+		bytes[i] = tmp;
+	}
+}
+
 
 /*****************
  * Serialization *
@@ -85,11 +104,11 @@ std::string Tag::write() const
 		index += sizeof(Long);
 		break;
 	case TagType::Float:
-		writeBytes(bytes + index, (UByte *) &value.v_float, sizeof(float));
+		writeFloat(bytes + index, value.v_float);
 		index += sizeof(float);
 		break;
 	case TagType::Double:
-		writeBytes(bytes + index, (UByte *) &value.v_double, sizeof(double));
+		writeDouble(bytes + index, value.v_double);
 		index += sizeof(double);
 		break;
 	case TagType::ByteArray:
@@ -110,8 +129,11 @@ std::string Tag::write() const
 		index += sizeof(Int);
 		for (; i < value.v_list.size; i++) {
 			str = value.v_list.value[i].write();
-			writeBytes(bytes + index, (const UByte *) str.data(), str.size());
-			index += str.size();
+			// Skip first byte (tag id)
+			writeBytes(bytes + index,
+					(const UByte *) (str.data() + sizeof(UByte)),
+					str.size() - sizeof(UByte));
+			index += str.size() - sizeof(UByte);
 		}
 		break;
 	case TagType::Compound:
@@ -263,6 +285,24 @@ inline void writeLong(UByte * bytes, ULong l)
 }
 
 
+inline void writeFloat(UByte * bytes, float f)
+{
+	if (byteOrder() == NBT_LITTLE_ENDIAN) {
+		swapBytes((UByte *) &f, sizeof(float));
+	}
+	memcpy((void *) bytes, (void *) &f, sizeof(float));
+}
+
+
+inline void writeDouble(UByte * bytes, double d)
+{
+	if (byteOrder() == NBT_LITTLE_ENDIAN) {
+		swapBytes((UByte *) &d, sizeof(double));
+	}
+	memcpy((void *) bytes, (void *) &d, sizeof(double));
+}
+
+
 inline void writeString(UByte * bytes, const char * str, UShort size)
 {
 	writeShort(bytes, size);
@@ -371,7 +411,10 @@ inline ULong readLong(const UByte *bytes)
 inline float readFloat(const UByte *bytes)
 {
 	float x;
-	memcpy((void*) &x, (void *) bytes, sizeof(float));
+	memcpy((void *) &x, (void *) bytes, sizeof(float));
+	if (byteOrder() == NBT_LITTLE_ENDIAN) {
+		swapBytes((UByte *) &x, sizeof(float));
+	}
 	return x;
 }
 
@@ -380,6 +423,9 @@ inline double readDouble(const UByte *bytes)
 {
 	double x;
 	memcpy((void*) &x, (void *) bytes, sizeof(double));
+	if (byteOrder() == NBT_LITTLE_ENDIAN) {
+		swapBytes((UByte *) &x, sizeof(double));
+	}
 	return x;
 }
 

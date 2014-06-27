@@ -12,6 +12,10 @@
 #	error NBT-CPP requires C++11
 #endif
 
+static_assert(sizeof(float) == 4,  "NBT depends on IEEE-754 32-bit floats");
+static_assert(sizeof(double) == 8, "NBT depends on IEEE-754 64-bit doubless");
+
+
 namespace NBT {
 
 /*********
@@ -85,7 +89,7 @@ class Tag {
 public:
 	Tag();
 	Tag(const UByte *bytes);
-	Tag(const TagType tag, UInt size = 0);
+	Tag(const TagType tag, UInt size = 0, TagType subtype = TagType::End);
 
 	Tag(const Byte x);
 	Tag(const Short x);
@@ -123,7 +127,7 @@ public:
 
 	void copy(const Tag &t);
 	void free();
-	void setTag(const TagType tag, UInt size = 0);
+	void setTag(const TagType tag, UInt size = 0, TagType subtype = TagType::End);
 
 	void read(const UByte *bytes);
 	std::string write() const;

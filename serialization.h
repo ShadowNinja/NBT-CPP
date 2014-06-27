@@ -8,6 +8,8 @@ extern inline void writeByte(UByte * bytes, UByte b);
 extern inline void writeShort(UByte * bytes, UShort s);
 extern inline void writeInt(UByte * bytes, UInt i);
 extern inline void writeLong(UByte * bytes, ULong l);
+extern inline void writeFloat(UByte * bytes, float f);
+extern inline void writeDouble(UByte * bytes, double d);
 extern inline void writeString(UByte * bytes, const char * str, UShort size);
 
 
