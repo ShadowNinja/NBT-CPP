@@ -6,25 +6,12 @@
 #include "serialization.h"
 
 
-#define NBT_BIG_ENDIAN    0x01020304UL
-#define NBT_LITTLE_ENDIAN 0x04030201UL
-
 namespace NBT {
 
-constexpr UInt byteOrder() {
-	return ((union {UByte bytes[4]; UInt i;}) {{1, 2, 3, 4}}).i;
-}
-
-
-inline void swapBytes(UByte * bytes, UByte len)
-{
-	UByte tmp;
-	for (UByte i = 0; i < len / 2; i++) {
-		tmp = bytes[len - i - 1];
-		bytes[len - i - 1] = bytes[i];
-		bytes[i] = tmp;
-	}
-}
+inline void writeByte(UByte * bytes, UByte b);
+inline void writeBytes(UByte * bytes, const UByte * write, UInt size);
+inline void writeString(UByte * bytes, const char * str, UShort size);
+inline UByte readByte(const UByte * bytes);
 
 
 /*****************
@@ -79,7 +66,9 @@ std::string Tag::write() const
 	ULong index = 0;
 	UInt i = 0;
 	ULong size = getSerializedSize() + sizeof(UByte);  // Add tag size
-	UByte bytes[size];
+	std::string byteStr;
+	byteStr.resize(size);
+	UByte *bytes = reinterpret_cast<UByte *>(&byteStr[0]);
 	std::string str;
 
 	writeByte((bytes + index++), (UByte) type);
@@ -163,7 +152,7 @@ std::string Tag::write() const
 		break;
 	}
 
-	return std::string((char*) bytes, size);
+	return byteStr;
 }
 
 
@@ -246,60 +235,13 @@ std::string Tag::dump() const
 
 inline void writeBytes(UByte * bytes, const UByte * write, UInt size)
 {
-	memcpy((void *) bytes, (void *) write, size);
+	memcpy(bytes, write, size);
 }
 
 
 inline void writeByte(UByte * bytes, UByte b)
 {
 	bytes[0] = b;
-}
-
-
-inline void writeShort(UByte * bytes, UShort s)
-{
-	bytes[0] = (UByte) (s >> 8) & 0xFF;
-	bytes[1] = (UByte)  s       & 0xFF;
-}
-
-
-inline void writeInt(UByte * bytes, UInt i)
-{
-	bytes[0] = (UByte) (i >> 24) & 0xFF;
-	bytes[1] = (UByte) (i >> 16) & 0xFF;
-	bytes[2] = (UByte) (i >> 8 ) & 0xFF;
-	bytes[3] = (UByte)  i        & 0xFF;
-}
-
-
-inline void writeLong(UByte * bytes, ULong l)
-{
-	bytes[0] = (UByte) (l >> 56) & 0xFF;
-	bytes[1] = (UByte) (l >> 48) & 0xFF;
-	bytes[2] = (UByte) (l >> 40) & 0xFF;
-	bytes[3] = (UByte) (l >> 32) & 0xFF;
-	bytes[4] = (UByte) (l >> 24) & 0xFF;
-	bytes[5] = (UByte) (l >> 16) & 0xFF;
-	bytes[6] = (UByte) (l >> 8 ) & 0xFF;
-	bytes[7] = (UByte)  l        & 0xFF;
-}
-
-
-inline void writeFloat(UByte * bytes, float f)
-{
-	if (byteOrder() == NBT_LITTLE_ENDIAN) {
-		swapBytes((UByte *) &f, sizeof(float));
-	}
-	memcpy((void *) bytes, (void *) &f, sizeof(float));
-}
-
-
-inline void writeDouble(UByte * bytes, double d)
-{
-	if (byteOrder() == NBT_LITTLE_ENDIAN) {
-		swapBytes((UByte *) &d, sizeof(double));
-	}
-	memcpy((void *) bytes, (void *) &d, sizeof(double));
 }
 
 
@@ -377,56 +319,6 @@ void Tag::readTag(const UByte *bytes, ULong &index, TagType tag)
 inline UByte readByte(const UByte * bytes)
 {
 	return bytes[0];
-}
-
-
-inline UShort readShort(const UByte * bytes)
-{
-	return ((UShort) bytes[0] << 8) | ((UShort) bytes[1]);
-}
-
-
-inline UInt readInt(const UByte * bytes)
-{
-	return ((UInt) bytes[0] << 24)
-			| ((UInt) bytes[1] << 16)
-			| ((UInt) bytes[2] << 8)
-			| ((UInt) bytes[3]);
-}
-
-
-inline ULong readLong(const UByte *bytes)
-{
-	return ((ULong) bytes[0] << 56)
-			| ((ULong) bytes[1] << 48)
-			| ((ULong) bytes[2] << 40)
-			| ((ULong) bytes[3] << 32)
-			| ((ULong) bytes[4] << 24)
-			| ((ULong) bytes[5] << 16)
-			| ((ULong) bytes[6] << 8 )
-			| ((ULong) bytes[7]);
-}
-
-
-inline float readFloat(const UByte *bytes)
-{
-	float x;
-	memcpy((void *) &x, (void *) bytes, sizeof(float));
-	if (byteOrder() == NBT_LITTLE_ENDIAN) {
-		swapBytes((UByte *) &x, sizeof(float));
-	}
-	return x;
-}
-
-
-inline double readDouble(const UByte *bytes)
-{
-	double x;
-	memcpy((void*) &x, (void *) bytes, sizeof(double));
-	if (byteOrder() == NBT_LITTLE_ENDIAN) {
-		swapBytes((UByte *) &x, sizeof(double));
-	}
-	return x;
 }
 
 
