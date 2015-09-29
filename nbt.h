@@ -9,7 +9,7 @@
 
 // Require C++11
 #if __cplusplus < 201103L
-#	error NBT-CPP requires C++11
+	#error NBT-CPP requires C++11
 #endif
 
 static_assert(sizeof(float) == 4,  "NBT depends on IEEE-754 32-bit floats");
@@ -87,21 +87,23 @@ union Value {
 
 class Tag {
 public:
-	Tag();
+	Tag() : type(TagType::End), value() {}
 	Tag(const UByte *bytes);
 	Tag(const TagType tag, UInt size = 0, TagType subtype = TagType::End);
 
-	Tag(const Byte x);
-	Tag(const Short x);
-	Tag(const Int x);
-	Tag(const Long x);
-	Tag(const float x);
-	Tag(const double x);
+	Tag(Byte x)   : type(TagType::Byte)   { value.v_byte = x; }
+	Tag(Short x)  : type(TagType::Short)  { value.v_short = x; }
+	Tag(Int x)    : type(TagType::Int)    { value.v_int = x; }
+	Tag(Long x)   : type(TagType::Long)   { value.v_long = x; }
+	Tag(float x)  : type(TagType::Float)  { value.v_float = x; }
+	Tag(double x) : type(TagType::Double) { value.v_double = x; }
 	Tag(const std::string x);
 
-	Tag(const Tag &t);
-	Tag(Tag &&t);
-	~Tag();
+	Tag(const Tag &t) : type(TagType::End) { copy(t); }
+	Tag(Tag &&t) : type(t.type), value(t.value)
+		{ t.type = TagType::End; }
+
+	~Tag() { free(); }
 
 	Tag & operator=(const Tag &t);
 	Tag & operator=(Tag &&t);
@@ -113,17 +115,17 @@ public:
 	Tag & operator+=(const Tag &t);
 	Tag & operator+=(Tag &&t);
 
-	operator Byte();
-	operator Short();
-	operator Int();
-	operator Long();
-	operator float();
-	operator double();
-	operator ByteArray();
-	operator String();
-	operator List();
-	operator Compound();
-	operator IntArray();
+	operator Byte     () { return value.v_byte; }
+	operator Short    () { return value.v_short; }
+	operator Int      () { return value.v_int; }
+	operator Long     () { return value.v_long; }
+	operator float    () { return value.v_float; }
+	operator double   () { return value.v_double; }
+	operator ByteArray() { return value.v_byte_array; }
+	operator String   () { return value.v_string; }
+	operator List     () { return value.v_list; }
+	operator Compound () { return *value.v_compound; }
+	operator IntArray () { return value.v_int_array; }
 
 	void copy(const Tag &t);
 	void free();
