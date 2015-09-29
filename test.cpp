@@ -12,28 +12,29 @@
 
 std::string hexdump(std::string s);
 
-int main(int argc, char *argv[]) {
+int main() {
 	std::string data(
 		"\x0A" // compound
 			"\x01" // Byte
-				"\x00\x01" // Size 1
-				"A" // key "A"
-				"\x40" // value, 0x40
+				"\x00\x01" // Key size 1
+				"A" // Key
+				"\x40" // value
 			"\x08" // String
-				"\x00\x06"
-				"foobar"
-				"\x00\x09"
-				"<3 C++ 11"
+				"\x00\x06" // Key size 6
+				"foobar" // Key
+				"\x00\x09" // Value size 9
+				"<3 C++ 11" // Value
 			"\x03" // Int
-				"\x00\x04" // Size 4
-				"test" // key "test"
-				"\x12\x34\x56\x78" // value, 0x12345678
+				"\x00\x04" // Key size 4
+				"test" // key
+				"\x12\x34\x56\x78" // value
 			"\x00" // End
 		, 38);
 
 	NBT::Tag root((NBT::UByte *) data.c_str());
 	std::cout << "Original: " << hexdump(data) << std::endl;
 	std::cout << "Written:  " << hexdump(root.write()) << std::endl;
+	std::cout << "Dump: " << root.dump() << std::endl;
 
 	NBT::ustring udata = NBT::ustring((const unsigned char *) data.data(), data.size());
 	NBT::ustring comp = NBT::compress(udata, 1);
