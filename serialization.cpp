@@ -142,8 +142,8 @@ std::string Tag::write() const
 		index += sizeof(Byte);
 		break;
 	case TagType::IntArray:
-		writeShort(bytes + index, value.v_int_array.size);
-		index += sizeof(Short);
+		writeInt(bytes + index, value.v_int_array.size);
+		index += sizeof(Int);
 		// Can't use memcpy, or you have to account for endianess
 		for (; i < value.v_int_array.size; i++) {
 			writeInt(bytes + index, value.v_int_array.value[i]);
@@ -398,8 +398,8 @@ Compound *readCompound(const UByte *bytes, ULong &index)
 IntArray readIntArray(const UByte *bytes, ULong &index)
 {
 	IntArray x;
-	x.size = readShort(bytes + index);
-	index += sizeof(Short);
+	x.size = readInt(bytes + index);
+	index += sizeof(Int);
 	if (x.size > 0) {
 		x.value = new Int[x.size];
 	}

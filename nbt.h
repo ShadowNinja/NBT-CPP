@@ -67,7 +67,7 @@ struct List {
 typedef std::map<std::string, Tag> Compound;
 
 struct IntArray {
-	UShort size;
+	UInt size;
 	Int *value;
 };
 
