@@ -10,7 +10,7 @@
 #include "nbt.h"
 #include "compression.h"
 
-std::string hexdump(std::string s);
+std::string hexdump(const std::string &s);
 
 int main() {
 	std::string data(
@@ -122,7 +122,7 @@ int main() {
 	return 0;
 }
 
-std::string hexdump(std::string s)
+std::string hexdump(const std::string &s)
 {
 	std::ostringstream os;
 	os << std::hex << std::uppercase;
