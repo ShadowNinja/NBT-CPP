@@ -7,8 +7,8 @@
 #include <cassert>
 #include <chrono>
 
-#include "nbt.h"
-#include "compression.h"
+#include "nbt.hpp"
+#include "compression.hpp"
 
 
 std::string hexdump(const std::string &s);

@@ -2,7 +2,7 @@
 #include <cstring>
 #include <cassert>
 
-#include "nbt.h"
+#include "nbt.hpp"
 
 namespace NBT {
 

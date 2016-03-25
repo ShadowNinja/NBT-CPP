@@ -2,8 +2,8 @@
 #include <cstring>
 #include <sstream>
 
-#include "nbt.h"
-#include "serialization.h"
+#include "nbt.hpp"
+#include "serialization.hpp"
 
 
 namespace NBT {

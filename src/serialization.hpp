@@ -1,7 +1,7 @@
 #ifndef NBT_SERIALIZATION_HEADER
 #define NBT_SERIALIZATION_HEADER
 
-#include "endian.h"
+#include "endian.hpp"
 
 namespace NBT {
 

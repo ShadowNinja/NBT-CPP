@@ -4,7 +4,7 @@
 
 #include <zlib.h>
 
-#include "compression.h"
+#include "compression.hpp"
 
 namespace NBT {
 
