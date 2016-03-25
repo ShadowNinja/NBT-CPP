@@ -1,8 +1,6 @@
-.scons*
+.scon*
 *.o
 *.obj
-*.a
-*.lib
-test
-*.exe
+bin
+*~
 

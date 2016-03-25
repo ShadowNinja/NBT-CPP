@@ -7,7 +7,7 @@ vars.AddVariables(
 
 env = Environment(
 	variables = vars,
-	LIBPATH = ["."]
+	LIBPATH = ["bin"]
 )
 
 Help(vars.GenerateHelpText(env))
@@ -18,13 +18,13 @@ if env["debug"]:
 else:
 	env.MergeFlags("-O3")
 
-env.StaticLibrary("nbt", Split("""
+env.StaticLibrary("bin/nbt", Split("""
 	nbt.cpp
 	serialization.cpp
 	compression.cpp
 """))
 
-env.Program("test", "test.cpp",
+env.Program("bin/test", "test.cpp",
 	LIBS = ["nbt", "z"]
 )
 
