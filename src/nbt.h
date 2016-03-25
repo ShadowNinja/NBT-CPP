@@ -91,6 +91,8 @@ public:
 	Tag() : type(TagType::End), value() {}
 	Tag(const UByte *bytes, bool compound=true);
 	Tag(const char *bytes) = delete;
+	//Tag(const std::string &bytes) : Tag(bytes.data()) {}
+	//Tag(const std::basic_string<unsigned char> &bytes) : Tag(bytes.data()) {}
 	Tag(const TagType tag, UInt size = 0, TagType subtype = TagType::End);
 
 	Tag(Byte x)   : type(TagType::Byte)   { value.v_byte = x; }

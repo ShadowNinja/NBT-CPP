@@ -19,12 +19,12 @@ else:
 	env.MergeFlags("-O3")
 
 env.StaticLibrary("bin/nbt", Split("""
-	nbt.cpp
-	serialization.cpp
-	compression.cpp
+	src/nbt.cpp
+	src/serialization.cpp
+	src/compression.cpp
 """))
 
-env.Program("bin/test", "test.cpp",
+env.Program("bin/test", "src/test.cpp",
 	LIBS = ["nbt", "z"]
 )
 
