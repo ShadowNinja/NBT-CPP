@@ -88,7 +88,7 @@ union Value {
 class Tag {
 public:
 	Tag() : type(TagType::End), value() {}
-	Tag(const UByte *bytes);
+	Tag(const UByte *bytes, bool compound=true);
 	Tag(const TagType tag, UInt size = 0, TagType subtype = TagType::End);
 
 	Tag(Byte x)   : type(TagType::Byte)   { value.v_byte = x; }
@@ -131,8 +131,8 @@ public:
 	void free();
 	void setTag(const TagType tag, UInt size = 0, TagType subtype = TagType::End);
 
-	void read(const UByte *bytes);
-	std::string write() const;
+	void read(const UByte *bytes, bool compound=true);
+	std::string write(bool write_type=false) const;
 	std::string dump() const;
 
 	void insert(const Int k, const Byte b);

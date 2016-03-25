@@ -61,17 +61,22 @@ ULong Tag::getSerializedSize() const
 }
 
 
-std::string Tag::write() const
+std::string Tag::write(bool write_type) const
 {
 	ULong index = 0;
 	UInt i = 0;
-	ULong size = getSerializedSize() + sizeof(UByte);  // Add tag size
+	ULong size = getSerializedSize();
+
+	if (write_type)
+		size += sizeof(Byte);
+
 	std::string byteStr;
 	byteStr.resize(size);
 	UByte *bytes = reinterpret_cast<UByte *>(&byteStr[0]);
 	std::string str;
 
-	writeByte((bytes + index++), (UByte) type);
+	if (write_type)
+		writeByte((bytes + index++), (UByte) type);
 
 	switch (type) {
 	case TagType::End:
@@ -118,11 +123,10 @@ std::string Tag::write() const
 		index += sizeof(Int);
 		for (; i < value.v_list.size; i++) {
 			str = value.v_list.value[i].write();
-			// Skip first byte (tag id)
 			writeBytes(bytes + index,
-					(const UByte *) (str.data() + sizeof(UByte)),
-					str.size() - sizeof(UByte));
-			index += str.size() - sizeof(UByte);
+				reinterpret_cast<const UByte *>(str.data()),
+				str.size());
+			index += str.size();
 		}
 		break;
 	case TagType::Compound:
@@ -132,11 +136,10 @@ std::string Tag::write() const
 			writeString(bytes + index, it.first.data(), it.first.size());
 			index += sizeof(Short) + it.first.size();
 			str = it.second.write();
-			// Skip first byte (tag id)
 			writeBytes(bytes + index,
-				(const UByte *) (str.data() + sizeof(UByte)),
-				str.size() - sizeof(UByte));
-			index += str.size() - sizeof(UByte);
+				reinterpret_cast<const UByte *>(str.data()),
+				str.size());
+			index += str.size();
 		}
 		writeByte(bytes + index, (UByte) TagType::End);
 		index += sizeof(Byte);
@@ -256,12 +259,19 @@ inline void writeString(UByte * bytes, const char * str, UShort size)
  * Deserialization *
  *******************/
 
-void Tag::read(const UByte *bytes)
+void Tag::read(const UByte *bytes, bool compound)
 {
 	free();
-	TagType tag = (TagType) readByte(bytes);
-	ULong index = sizeof(Byte);
-	readTag(bytes, index, tag);
+	ULong index = 0;
+	// Strictly, the root NBT tag must be Compound, but it's theoretically
+	// possible to store other values directly as the root element.
+	if (compound) {
+		readTag(bytes, index, TagType::Compound);
+	} else {
+		TagType tag = (TagType) readByte(bytes);
+		index += sizeof(Byte);
+		readTag(bytes, index, tag);
+	}
 }
 
 

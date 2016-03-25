@@ -14,22 +14,21 @@ std::string hexdump(const std::string &s);
 
 int main() {
 	std::string data(
-		"\x0A" // compound
-			"\x01" // Byte
-				"\x00\x01" // Key size 1
-				"A" // Key
-				"\x40" // value
-			"\x08" // String
-				"\x00\x06" // Key size 6
-				"foobar" // Key
-				"\x00\x09" // Value size 9
-				"<3 C++ 11" // Value
-			"\x03" // Int
-				"\x00\x04" // Key size 4
-				"test" // key
-				"\x12\x34\x56\x78" // value
-			"\x00" // End
-		, 38);
+		"\x01" // Byte
+			"\x00\x01" // Key size 1
+			"A" // Key
+			"\x40" // value
+		"\x08" // String
+			"\x00\x06" // Key size 6
+			"foobar" // Key
+			"\x00\x09" // Value size 9
+			"<3 C++ 11" // Value
+		"\x03" // Int
+			"\x00\x04" // Key size 4
+			"test" // key
+			"\x12\x34\x56\x78" // value
+		"\x00" // End
+		, 37);
 
 	NBT::Tag root((NBT::UByte *) data.c_str());
 	std::cout << "Original: " << hexdump(data) << std::endl;

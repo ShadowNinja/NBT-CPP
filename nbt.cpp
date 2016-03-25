@@ -14,10 +14,10 @@ namespace NBT {
  ********************/
 
 
-Tag::Tag(const UByte *bytes) :
+Tag::Tag(const UByte *bytes, bool compound) :
 	type(TagType::End)
 {
-	read(bytes);
+	read(bytes, compound);
 }
 
 Tag::Tag(const TagType tag, UInt size, TagType subtype) :
