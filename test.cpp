@@ -36,12 +36,6 @@ int main() {
 	std::cout << "Written:  " << hexdump(root.write()) << std::endl;
 	std::cout << "Dump: " << root.dump() << std::endl;
 
-	NBT::ustring udata = NBT::ustring((const unsigned char *) data.data(), data.size());
-	NBT::ustring comp = NBT::compress(udata, 1);
-	std::cout << "Compressed: " << hexdump(std::string((const char *) comp.data(), comp.size())) << std::endl;
-	NBT::ustring decomp = NBT::decompress(comp);
-	assert(decomp == udata);
-
 	assert((NBT::Byte) root["A"] == 0x40);
 	assert((NBT::Int) root["test"] == 0x12345678);
 	NBT::String foobar = root["foobar"];
@@ -117,6 +111,12 @@ int main() {
 	std::cout << "Completed 1,000 writes of 1,000 floats in " <<
 			duration_cast<duration<double>>(high_resolution_clock::now() - start).count()
 			<< " seconds." << std::endl;
+
+	std::string long_str(256*1024, '*');
+	std::string comp, decomp;
+	assert(NBT::compress(&comp, long_str.data(), long_str.size()));
+	assert(NBT::decompress(&decomp, comp.data(), comp.size()));
+	assert(decomp == long_str);
 
 	std::cout << "Success!" << std::endl;
 	return 0;

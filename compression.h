@@ -1,20 +1,14 @@
 #ifndef NBT_COMPRESSION_HEADER
 #define NBT_COMPRESSION_HEADER
 
-#include <stdexcept>
 #include <string>
 #include <zlib.h>
 
 namespace NBT {
 
-typedef std::basic_string<unsigned char> ustring;
-
-extern ustring compress(const ustring & data, int level = Z_DEFAULT_COMPRESSION);
-extern ustring decompress(const ustring & data);
-
-class CompressionError : public std::runtime_error {
-	using std::runtime_error::runtime_error;
-};
+extern bool compress(std::string * out, const char * in, size_t size,
+		int level = Z_DEFAULT_COMPRESSION);
+extern bool decompress(std::string * out, const char * in, size_t size);
 
 } // namespace NBT
 

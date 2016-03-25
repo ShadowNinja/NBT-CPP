@@ -6,83 +6,94 @@
 
 #include "compression.h"
 
-#define BUFSIZE (128 * 1024)
-
-
 namespace NBT {
 
-ustring compress(const ustring & data, int level)
+constexpr std::size_t cmp_buf_size = 128 * 1024;
+
+bool compress(std::string * out, const char * in, size_t size, int level)
 {
 	int res = 0;
-	ustring buffer;
-	unsigned char temp_buffer[BUFSIZE];
+	unsigned char temp_buffer[cmp_buf_size];
 
 	z_stream strm;
 	strm.zalloc = Z_NULL;
 	strm.zfree = Z_NULL;
 	strm.opaque = Z_NULL;
-	strm.next_in = Z_NULL;
-	strm.avail_in = data.size();
+	strm.next_in = reinterpret_cast<unsigned char *>(const_cast<char *>(in));
+	strm.avail_in = size;
 
-	if (deflateInit(&strm, level) != Z_OK) {
-		throw CompressionError("Error initializing stream");
+	if ((res = deflateInit(&strm, level)) != Z_OK) {
+		*out = "Error initializing stream: " + std::to_string(res);
+		return false;
 	}
 
-	strm.next_in = const_cast<unsigned char *>(data.data());
 	do {
-		strm.avail_out = BUFSIZE;
+		strm.avail_out = cmp_buf_size;
 		strm.next_out = temp_buffer;
+
 		res = deflate(&strm, Z_FINISH);
-		assert(strm.avail_out > 0);
-		buffer += ustring(temp_buffer, BUFSIZE - strm.avail_out);
+
+		if (res != Z_OK && res != Z_STREAM_END)
+			break;
+
+		// avail_out is amount of *unused* space in next_out
+		size_t count = cmp_buf_size - strm.avail_out;
+		auto signed_buf = reinterpret_cast<const char *>(temp_buffer);
+		out->append(signed_buf, count);
 	} while (res == Z_OK);
 
 	if (res != Z_STREAM_END) {
-		throw CompressionError("Deflation error");
+		*out = "Deflation error: " + std::to_string(res);
+		return false;
 	}
 
 	(void) deflateEnd(&strm);
 
-	return buffer;
+	return true;
 }
 
 
-ustring decompress(const ustring & data)
+bool decompress(std::string * out, const char * in, size_t size)
 {
 	int res = 0;
-	ustring buffer;
-	unsigned char temp_buffer[BUFSIZE];
+	unsigned char temp_buffer[cmp_buf_size];
 
 	z_stream strm;
 	strm.zalloc = Z_NULL;
 	strm.zfree = Z_NULL;
 	strm.opaque = Z_NULL;
-	strm.next_in = Z_NULL;
-	strm.avail_in = data.size();
+	strm.next_in = reinterpret_cast<unsigned char *>(const_cast<char *>(in));
+	strm.avail_in = size;
 
-	if (inflateInit(&strm) != Z_OK) {
-		throw CompressionError("Error initializing stream");
+	if ((res = inflateInit(&strm)) != Z_OK) {
+		*out = "Error initializing stream: " + std::to_string(res);
+		return false;
 	}
 
-	strm.next_in = const_cast<unsigned char *>(data.data());
 	do {
 		strm.next_out = temp_buffer;
-		strm.avail_out = BUFSIZE;
-		res = inflate(&strm, Z_FINISH);
-		assert(strm.avail_out > 0);
-		buffer += ustring(temp_buffer, BUFSIZE - strm.avail_out);
+		strm.avail_out = cmp_buf_size;
+
+		res = inflate(&strm, Z_NO_FLUSH);
+
+		if (res != Z_OK && res != Z_STREAM_END)
+			break;
+
+		// avail_out is amount of *unused* space in next_out
+		size_t count = cmp_buf_size - strm.avail_out;
+		auto signed_buf = reinterpret_cast<const char *>(temp_buffer);
+		out->append(signed_buf, count);
 	} while (res == Z_OK);
 
 	if (res != Z_STREAM_END) {
-		throw CompressionError("Inflation error");
+		*out = "Inflation error: " + std::to_string(res);
+		return false;
 	}
 
 	(void) inflateEnd(&strm);
 
-	return buffer;
+	return true;
 }
 
 } // namespace NBT
-
-#undef BUFSIZE
 
