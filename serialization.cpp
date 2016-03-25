@@ -147,7 +147,7 @@ std::string Tag::write(bool write_type) const
 	case TagType::IntArray:
 		writeInt(bytes + index, value.v_int_array.size);
 		index += sizeof(Int);
-		// Can't use memcpy, or you have to account for endianess
+		// Can't use memcpy, since you have to account for endianess
 		for (; i < value.v_int_array.size; i++) {
 			writeInt(bytes + index, value.v_int_array.value[i]);
 			index += sizeof(Int);
@@ -321,7 +321,9 @@ void Tag::readTag(const UByte *bytes, ULong &index, TagType tag)
 		value.v_int_array = readIntArray(bytes, index);
 		break;
 	default:
-		throw "Invalid tag type!";
+		throw std::runtime_error("Invalid tag type " +
+			std::to_string((int)tag) +
+			" at " + std::to_string(index));
 	}
 }
 
@@ -393,7 +395,11 @@ Compound *readCompound(const UByte *bytes, ULong &index)
 {
 	Compound *x = new Compound;
 	TagType tag;
-	while ((tag = (TagType) bytes[index++]) != TagType::End) {
+	while (true) {
+		tag = (TagType) readByte(bytes + index);
+		index += sizeof(Byte);
+		if (tag == TagType::End)
+			break;
 		String name = readString(bytes, index);
 		(*x)[std::string(name.value, name.size)]
 				.readTag(bytes, index, tag);

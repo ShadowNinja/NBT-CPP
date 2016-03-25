@@ -26,7 +26,7 @@ Tag::Tag(const TagType tag, UInt size, TagType subtype) :
 	setTag(tag, size, subtype);
 }
 
-Tag::Tag(std::string x) :
+Tag::Tag(const std::string &x) :
 	type(TagType::String)
 {
 	value.v_string.size = x.size();
@@ -64,19 +64,18 @@ Tag & Tag::operator = (Tag &&t)
 
 Tag & Tag::operator [] (const Int &k)
 {
+	assert(type == TagType::List);
 	UInt ak = TOABS(k, value.v_list.size);
 	ensureSize<List, Tag>(&value.v_list, ak + 1);
 	return value.v_list.value[ak];
 }
 
-Tag & Tag::operator [] (const std::string &k)
+Tag & Tag::operator [] (const Int &k) const
 {
-	return (*value.v_compound)[k];
-}
-
-Tag & Tag::operator[](const char *k)
-{
-	return (*value.v_compound)[k];
+	assert(type == TagType::List);
+	UInt ak = TOABS(k, value.v_list.size);
+	assert(ak < value.v_list.size);
+	return value.v_list.value[ak];
 }
 
 Tag & Tag::operator += (const Byte &b)

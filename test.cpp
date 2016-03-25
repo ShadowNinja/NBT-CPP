@@ -10,9 +10,11 @@
 #include "nbt.h"
 #include "compression.h"
 
+
 std::string hexdump(const std::string &s);
 
-int main() {
+int main()
+{
 	std::string data(
 		"\x01" // Byte
 			"\x00\x01" // Key size 1

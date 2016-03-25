@@ -3,6 +3,7 @@
 #define NBT_HEADER
 
 #include <cstdint>
+#include <cassert>
 #include <exception>
 #include <string>
 #include <map>
@@ -22,7 +23,7 @@ namespace NBT {
  * Types *
  *********/
 
-struct Tag;
+class Tag;
 
 typedef int8_t  Byte;
 typedef int16_t Short;
@@ -89,6 +90,7 @@ class Tag {
 public:
 	Tag() : type(TagType::End), value() {}
 	Tag(const UByte *bytes, bool compound=true);
+	Tag(const char *bytes) = delete;
 	Tag(const TagType tag, UInt size = 0, TagType subtype = TagType::End);
 
 	Tag(Byte x)   : type(TagType::Byte)   { value.v_byte = x; }
@@ -97,7 +99,7 @@ public:
 	Tag(Long x)   : type(TagType::Long)   { value.v_long = x; }
 	Tag(float x)  : type(TagType::Float)  { value.v_float = x; }
 	Tag(double x) : type(TagType::Double) { value.v_double = x; }
-	Tag(const std::string x);
+	Tag(const std::string &x);
 
 	Tag(const Tag &t) : type(TagType::End) { copy(t); }
 	Tag(Tag &&t) : type(t.type), value(t.value)
@@ -105,27 +107,36 @@ public:
 
 	~Tag() { free(); }
 
-	Tag & operator=(const Tag &t);
-	Tag & operator=(Tag &&t);
-	Tag & operator[](const Int &k);
-	Tag & operator[](const std::string &k);
-	Tag & operator[](const char *k);
-	Tag & operator+=(const Byte &t);
-	Tag & operator+=(const Int &t);
-	Tag & operator+=(const Tag &t);
-	Tag & operator+=(Tag &&t);
+	Tag & operator = (const Tag &t);
+	Tag & operator = (Tag &&t);
+	Tag & operator [] (const Int &k);
+	Tag & operator [] (const Int &k) const;
+	Tag & operator [] (const std::string &k) { assert(type == TagType::Compound); return (*value.v_compound)[k]; }
+	Tag & operator [] (const std::string &k) const { assert(type == TagType::Compound); return value.v_compound->at(k); }
+	Tag & operator [] (const char *k) { assert(type == TagType::Compound); return (*value.v_compound)[k]; }
+	Tag & operator [] (const char *k) const { assert(type == TagType::Compound); return value.v_compound->at(k); }
 
-	operator Byte     () { return value.v_byte; }
-	operator Short    () { return value.v_short; }
-	operator Int      () { return value.v_int; }
-	operator Long     () { return value.v_long; }
-	operator float    () { return value.v_float; }
-	operator double   () { return value.v_double; }
-	operator ByteArray() { return value.v_byte_array; }
-	operator String   () { return value.v_string; }
-	operator List     () { return value.v_list; }
-	operator Compound () { return *value.v_compound; }
-	operator IntArray () { return value.v_int_array; }
+	Tag & operator += (const Byte &t);
+	Tag & operator += (const Int &t);
+	Tag & operator += (const Tag &t);
+	Tag & operator += (Tag &&t);
+
+	operator Byte      () { assert(type == TagType::Byte);      return value.v_byte; }
+	operator Short     () { assert(type == TagType::Short);     return value.v_short; }
+	operator Int       () { assert(type == TagType::Int);       return value.v_int; }
+	operator Long      () { assert(type == TagType::Long);      return value.v_long; }
+	operator float     () { assert(type == TagType::Float);     return value.v_float; }
+	operator double    () { assert(type == TagType::Double);    return value.v_double; }
+	operator ByteArray () { assert(type == TagType::ByteArray); return value.v_byte_array; }
+	operator String    () { assert(type == TagType::String);    return value.v_string; }
+	operator List      () { assert(type == TagType::List);      return value.v_list; }
+	operator Compound& () { assert(type == TagType::Compound);  return *value.v_compound; }
+	operator IntArray  () { assert(type == TagType::IntArray);  return value.v_int_array; }
+	operator const ByteArray () const { assert(type == TagType::ByteArray); return value.v_byte_array; }
+	operator const String    () const { assert(type == TagType::String);    return value.v_string; }
+	operator const List      () const { assert(type == TagType::List);      return value.v_list; }
+	operator const Compound& () const { assert(type == TagType::Compound);  return *value.v_compound; }
+	operator const IntArray  () const { assert(type == TagType::IntArray);  return value.v_int_array; }
 
 	void copy(const Tag &t);
 	void free();
