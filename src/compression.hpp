@@ -6,8 +6,11 @@
 
 namespace NBT {
 
+enum class CompressionFormat {ZLib, GZip};
+
 extern bool compress(std::string * out, const char * in, size_t size,
-		int level = Z_DEFAULT_COMPRESSION);
+		int level = Z_DEFAULT_COMPRESSION,
+		CompressionFormat format = CompressionFormat::ZLib);
 extern bool decompress(std::string * out, const char * in, size_t size);
 
 } // namespace NBT

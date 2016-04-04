@@ -10,7 +10,8 @@ namespace NBT {
 
 constexpr std::size_t cmp_buf_size = 128 * 1024;
 
-bool compress(std::string * out, const char * in, size_t size, int level)
+bool compress(std::string * out, const char * in, size_t size, int level,
+		CompressionFormat format)
 {
 	int res = 0;
 	unsigned char temp_buffer[cmp_buf_size];
@@ -22,7 +23,12 @@ bool compress(std::string * out, const char * in, size_t size, int level)
 	strm.next_in = reinterpret_cast<unsigned char *>(const_cast<char *>(in));
 	strm.avail_in = size;
 
-	if ((res = deflateInit(&strm, level)) != Z_OK) {
+	int ws = 15;
+	if (format == CompressionFormat::GZip)
+		ws += 16;
+
+	if ((res = deflateInit2(&strm, level, Z_DEFLATED, ws, 8,
+			Z_DEFAULT_STRATEGY)) != Z_OK) {
 		*out = "Error initializing stream: " + std::to_string(res);
 		return false;
 	}
@@ -65,7 +71,7 @@ bool decompress(std::string * out, const char * in, size_t size)
 	strm.next_in = reinterpret_cast<unsigned char *>(const_cast<char *>(in));
 	strm.avail_in = size;
 
-	if ((res = inflateInit(&strm)) != Z_OK) {
+	if ((res = inflateInit2(&strm, 15 + 32)) != Z_OK) {
 		*out = "Error initializing stream: " + std::to_string(res);
 		return false;
 	}
