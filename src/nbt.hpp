@@ -7,14 +7,17 @@
 #include <exception>
 #include <string>
 #include <map>
+#include <limits>
 
 // Require C++11
 #if __cplusplus < 201103L
 	#error NBT-CPP requires C++11
 #endif
 
-static_assert(sizeof(float) == 4,  "NBT depends on IEEE-754 32-bit floats");
-static_assert(sizeof(double) == 8, "NBT depends on IEEE-754 64-bit doubless");
+static_assert(std::numeric_limits<float>::is_iec559 && sizeof(float) == 4,
+		"NBT depends on IEEE-754 32-bit floats");
+static_assert(std::numeric_limits<double>::is_iec559 && sizeof(double) == 8,
+		"NBT depends on IEEE-754 64-bit doubles");
 
 
 namespace NBT {
