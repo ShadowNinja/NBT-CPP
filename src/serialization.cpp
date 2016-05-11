@@ -213,7 +213,7 @@ std::string Tag::dump(const std::string &indent, UByte level) const
 		os << end_idt_str << ']';
 		break;
 	case TagType::String:
-		os << '"' << static_cast<std::string>(*this) << '"';
+		os << '"' << this->as<std::string>() << '"';
 		break;
 	case TagType::List:
 		os << '[';

@@ -145,6 +145,8 @@ public:
 		return std::string();
 	}
 
+	template <typename T> T as() const { return static_cast<T>(*this); }
+
 	void copy(const Tag &t);
 	void free();
 	void setTag(const TagType tag, UInt size = 0, TagType subtype = TagType::End);
