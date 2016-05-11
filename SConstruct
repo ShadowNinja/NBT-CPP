@@ -14,7 +14,7 @@ Help(vars.GenerateHelpText(env))
 
 env.MergeFlags("--std=c++11 -Wall -Wextra -Wpedantic")
 if env["debug"]:
-	env.MergeFlags("-g")
+	env.MergeFlags("-O0 -g")
 else:
 	env.MergeFlags("-O3")
 
