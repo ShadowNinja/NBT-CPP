@@ -137,11 +137,6 @@ public:
 	operator List      () const { assert(type == TagType::List);      return value.v_list; }
 	operator Compound& () const { assert(type == TagType::Compound);  return *value.v_compound; }
 	operator IntArray  () const { assert(type == TagType::IntArray);  return value.v_int_array; }
-	operator ByteArray () { assert(type == TagType::ByteArray); return value.v_byte_array; }
-	operator String    () { assert(type == TagType::String);    return value.v_string; }
-	operator List      () { assert(type == TagType::List);      return value.v_list; }
-	operator Compound& () { assert(type == TagType::Compound);  return *value.v_compound; }
-	operator IntArray  () { assert(type == TagType::IntArray);  return value.v_int_array; }
 
 	operator std::string () const {
 		assert(type == TagType::String);
