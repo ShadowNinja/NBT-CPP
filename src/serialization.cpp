@@ -82,39 +82,31 @@ std::string Tag::write(bool write_type) const
 	case TagType::End:
 		break;
 	case TagType::Byte:
-		writeByte((bytes + index), value.v_byte);
-		index += sizeof(Byte);
+		writeByte(bytes + index, value.v_byte);
 		break;
 	case TagType::Short:
 		writeShort(bytes + index, value.v_short);
-		index += sizeof(Short);
 		break;
 	case TagType::Int:
 		writeInt(bytes + index, value.v_int);
-		index += sizeof(Int);
 		break;
 	case TagType::Long:
 		writeLong(bytes + index, value.v_long);
-		index += sizeof(Long);
 		break;
 	case TagType::Float:
 		writeFloat(bytes + index, value.v_float);
-		index += sizeof(float);
 		break;
 	case TagType::Double:
 		writeDouble(bytes + index, value.v_double);
-		index += sizeof(double);
 		break;
 	case TagType::ByteArray:
 		writeInt(bytes + index, value.v_byte_array.size);
 		index += sizeof(Int);
 		writeBytes(bytes + index, (UByte *) value.v_byte_array.value,
 				value.v_byte_array.size);
-		index += value.v_byte_array.size;
 		break;
 	case TagType::String:
 		writeString(bytes + index, value.v_string.value, value.v_string.size);
-		index += sizeof(Short) + value.v_string.size;
 		break;
 	case TagType::List:
 		writeByte(bytes + index, (UByte) value.v_list.tagid);
@@ -142,7 +134,6 @@ std::string Tag::write(bool write_type) const
 			index += str.size();
 		}
 		writeByte(bytes + index, (UByte) TagType::End);
-		index += sizeof(Byte);
 		break;
 	case TagType::IntArray:
 		writeInt(bytes + index, value.v_int_array.size);
