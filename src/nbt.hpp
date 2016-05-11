@@ -156,7 +156,7 @@ public:
 
 	void read(const UByte *bytes, bool compound=true);
 	std::string write(bool write_type=false) const;
-	std::string dump() const;
+	std::string dump(const std::string &indent="\t", UByte level=0) const;
 
 	void insert(const Int k, const Byte b);
 	void insert(const Int k, const Int i);

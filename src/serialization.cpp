@@ -159,10 +159,28 @@ std::string Tag::write(bool write_type) const
 }
 
 
-std::string Tag::dump() const
+std::string Tag::dump(const std::string &indent, UByte level) const
 {
 	bool first = true;
 	std::ostringstream os;
+
+	// String used to indent items in a list
+	std::string idt_str;
+	// String used to indent the close of a list
+	std::string end_idt_str;
+	// String used to seperate items in a list.
+	// Placed after each item but before idt_str.
+	const char *sep_str = ", ";
+
+	if (!indent.empty()) {
+		end_idt_str.reserve(1 + indent.size() * level);
+		end_idt_str = '\n';
+		for (UByte i = 0; i < level; ++i)
+			end_idt_str += indent;
+		idt_str = end_idt_str + indent;
+		sep_str = ",";
+	}
+
 	switch (type) {
 	case TagType::End:
 		os << "<END>";
@@ -188,12 +206,11 @@ std::string Tag::dump() const
 	case TagType::ByteArray:
 		os << "byte[";
 		for (UInt i = 0; i < value.v_byte_array.size; i++) {
-			if (i != 0) {
-				os << ", ";
-			}
-			os << (Short) value.v_byte_array.value[i];
+			if (i != 0)
+				os << sep_str;
+			os << idt_str << (Short) value.v_byte_array.value[i];
 		}
-		os << ']';
+		os << end_idt_str << ']';
 		break;
 	case TagType::String:
 		os << '"' << static_cast<std::string>(*this) << '"';
@@ -201,33 +218,31 @@ std::string Tag::dump() const
 	case TagType::List:
 		os << '[';
 		for (UInt i = 0; i < value.v_list.size; i++) {
-			if (i != 0) {
-				os << ", ";
-			}
-			os << value.v_list.value[i].dump();
+			if (i != 0)
+				os << sep_str;
+			os << idt_str << value.v_list.value[i].dump(indent, level+1);
 		}
-		os << ']';
+		os << end_idt_str << ']';
 		break;
 	case TagType::Compound:
 		os << '{';
 		for (auto &it : *value.v_compound) {
-			if (!first) {
-				os << ", ";
-			}
+			if (!first)
+				os << sep_str;
 			first = false;
-			os << '"' << it.first << "\" = " << it.second.dump();
+			os << idt_str << '"' << it.first << "\" = "
+				<< it.second.dump(indent, level+1);
 		}
-		os << '}';
+		os << end_idt_str << '}';
 		break;
 	case TagType::IntArray:
 		os << "int[";
 		for (UInt i = 0; i < value.v_int_array.size; i++) {
-			if (i != 0) {
-				os << ", ";
-			}
-			os << value.v_int_array.value[i];
+			if (i != 0)
+				os << sep_str;
+			os << idt_str << value.v_int_array.value[i];
 		}
-		os << ']';
+		os << end_idt_str << ']';
 		break;
 	default:
 		os << "<UNKNOWN TAG>";
