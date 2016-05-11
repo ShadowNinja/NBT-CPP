@@ -68,12 +68,12 @@ int main()
 	for (int32_t i = 999; i >= 0; i--) {
 		root.insert(i, (const NBT::Int) (i - 10));
 	}
-	data = root.write();
+	data = root.write(true);
 
 	using namespace std::chrono;
 	high_resolution_clock::time_point start = high_resolution_clock::now();
 	for (uint32_t i = 0; i < 1000; i++) {
-		root.read((NBT::UByte*) data.c_str());
+		root.read((NBT::UByte*) data.c_str(), false);
 	}
 	std::cout << "Completed 1,000 reads of 1,000 integers in " <<
 			duration_cast<duration<double>>(high_resolution_clock::now() - start).count()
@@ -82,23 +82,23 @@ int main()
 	std::cout << "Testing writing performance..." << std::endl;
 	start = high_resolution_clock::now();
 	for (uint32_t i = 0; i < 1000; i++) {
-		root.write();
+		root.write(true);
 	}
 	std::cout << "Completed 1,000 writes of 1,000 integers in " <<
 			duration_cast<duration<double>>(high_resolution_clock::now() - start).count()
 			<< " seconds." << std::endl;
 
-	std::cout << "Integer array write: " << hexdump(root.write()).substr(0, 100) << "..." << std::endl;
-	std::cout << "Integer array dump: "  << root.dump().substr(0, 100) << "..." << std::endl;
+	std::cout << "Integer array write: " << hexdump(root.write(true)).substr(0, 100) << "..." << std::endl;
+	std::cout << "Integer array dump: "  << root.dump("").substr(0, 100) << "..." << std::endl;
 
 	root = NBT::Tag(NBT::TagType::List, 1000);
 	for (int32_t i = 0; i < 1000; i++) {
 		root.insert(i, NBT::Tag((float) (i / 2)));
 	}
-	data = root.write();
+	data = root.write(true);
 	start = high_resolution_clock::now();
 	for (uint32_t i = 0; i < 1000; i++) {
-		root.read((NBT::UByte *) data.c_str());
+		root.read((NBT::UByte *) data.c_str(), false);
 	}
 	std::cout << "Completed 1,000 reads of 1,000 floats in " <<
 			duration_cast<duration<double>>(high_resolution_clock::now() - start).count()
@@ -107,7 +107,7 @@ int main()
 	std::cout << "Testing writing performance..." << std::endl;
 	start = high_resolution_clock::now();
 	for (uint32_t i = 0; i < 1000; i++) {
-		root.write();
+		root.write(true);
 	}
 	std::cout << "Completed 1,000 writes of 1,000 floats in " <<
 			duration_cast<duration<double>>(high_resolution_clock::now() - start).count()
