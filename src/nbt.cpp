@@ -154,6 +154,7 @@ void Tag::copy(const Tag &t)
 	case TagType::ByteArray:
 		size = t.value.v_byte_array.size;
 		value.v_byte_array.size = size;
+		if (!size) break;
 		value.v_byte_array.value = new Byte[size];
 		memcpy((void*) value.v_byte_array.value,
 				(void*) t.value.v_byte_array.value, size);
@@ -161,6 +162,7 @@ void Tag::copy(const Tag &t)
 	case TagType::String:
 		size = t.value.v_string.size;
 		value.v_string.size = size;
+		if (!size) break;
 		value.v_string.value = new char[size];
 		strncpy(value.v_string.value,
 				t.value.v_string.value, size);
@@ -169,6 +171,7 @@ void Tag::copy(const Tag &t)
 		size = t.value.v_list.size;
 		value.v_list.tagid = t.value.v_list.tagid;
 		value.v_list.size = size;
+		if (!size) break;
 		value.v_list.value = new Tag[size];
 		for (UInt i = 0; i < size; i++) {
 			value.v_list.value[i] = t.value.v_list.value[i];
@@ -180,7 +183,8 @@ void Tag::copy(const Tag &t)
 	case TagType::IntArray:
 		size = t.value.v_int_array.size;
 		value.v_int_array.size = size;
-		if (size) value.v_int_array.value = new Int[size];
+		if (!size) break;
+		value.v_int_array.value = new Int[size];
 		memcpy((void*) value.v_int_array.value,
 				(void*) t.value.v_int_array.value, size * 4);
 		break;

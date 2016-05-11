@@ -196,7 +196,7 @@ std::string Tag::dump() const
 		os << ']';
 		break;
 	case TagType::String:
-		os << '"' << std::string(value.v_string.value, value.v_string.size) << '"';
+		os << '"' << static_cast<std::string>(*this) << '"';
 		break;
 	case TagType::List:
 		os << '[';
@@ -353,6 +353,8 @@ String readString(const UByte *bytes, ULong &index)
 	String x;
 	x.size = readShort(bytes + index);
 	index += sizeof(Short);
+	if (!x.size)
+		return x;
 	x.value = new char[x.size];
 	for (UShort i = 0; i < x.size; i++) {
 		x.value[i] = readByte(bytes + index);
@@ -400,12 +402,16 @@ Compound *readCompound(const UByte *bytes, ULong &index)
 		index += sizeof(Byte);
 		if (tag == TagType::End)
 			break;
+
 		String name = readString(bytes, index);
-		(*x)[std::string(name.value, name.size)]
-				.readTag(bytes, index, tag);
-		if (name.size > 0) {
+		std::string name_str;
+		if (name.size)
+			name_str.assign(name.value, name.size);
+
+		(*x)[name_str].readTag(bytes, index, tag);
+
+		if (name.size)
 			delete [] name.value;
-		}
 	}
 	return x;
 }

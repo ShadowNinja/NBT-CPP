@@ -143,6 +143,13 @@ public:
 	operator const Compound& () const { assert(type == TagType::Compound);  return *value.v_compound; }
 	operator const IntArray  () const { assert(type == TagType::IntArray);  return value.v_int_array; }
 
+	operator std::string () const {
+		assert(type == TagType::String);
+		if (value.v_string.size)
+			return std::string(value.v_string.value, value.v_string.size);
+		return std::string();
+	}
+
 	void copy(const Tag &t);
 	void free();
 	void setTag(const TagType tag, UInt size = 0, TagType subtype = TagType::End);
