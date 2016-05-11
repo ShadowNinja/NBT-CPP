@@ -29,7 +29,8 @@ bool compress(std::string * out, const char * in, size_t size, int level,
 
 	if ((res = deflateInit2(&strm, level, Z_DEFLATED, ws, 8,
 			Z_DEFAULT_STRATEGY)) != Z_OK) {
-		*out = "Error initializing stream: " + std::to_string(res);
+		*out = "Error initializing stream: ";
+		*out += zError(res);
 		return false;
 	}
 
@@ -49,7 +50,8 @@ bool compress(std::string * out, const char * in, size_t size, int level,
 	} while (res == Z_OK);
 
 	if (res != Z_STREAM_END) {
-		*out = "Deflation error: " + std::to_string(res);
+		*out = "Deflation error: ";
+		*out += zError(res);
 		return false;
 	}
 
@@ -72,7 +74,8 @@ bool decompress(std::string * out, const char * in, size_t size)
 	strm.avail_in = size;
 
 	if ((res = inflateInit2(&strm, 15 + 32)) != Z_OK) {
-		*out = "Error initializing stream: " + std::to_string(res);
+		*out = "Error initializing stream: ";
+		*out += zError(res);
 		return false;
 	}
 
@@ -92,7 +95,8 @@ bool decompress(std::string * out, const char * in, size_t size)
 	} while (res == Z_OK);
 
 	if (res != Z_STREAM_END) {
-		*out = "Inflation error: " + std::to_string(res);
+		*out = "Inflation error: ";
+		*out += zError(res);
 		return false;
 	}
 
