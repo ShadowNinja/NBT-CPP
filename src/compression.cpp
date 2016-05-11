@@ -35,7 +35,7 @@ bool compress(std::string * out, const char * in, size_t size, int level,
 	}
 
 	do {
-		strm.avail_out = cmp_buf_size;
+		strm.avail_out = sizeof(temp_buffer);
 		strm.next_out = temp_buffer;
 
 		res = deflate(&strm, Z_FINISH);
@@ -44,7 +44,7 @@ bool compress(std::string * out, const char * in, size_t size, int level,
 			break;
 
 		// avail_out is amount of *unused* space in next_out
-		size_t count = cmp_buf_size - strm.avail_out;
+		size_t count = sizeof(temp_buffer) - strm.avail_out;
 		auto signed_buf = reinterpret_cast<const char *>(temp_buffer);
 		out->append(signed_buf, count);
 	} while (res == Z_OK);
@@ -81,7 +81,7 @@ bool decompress(std::string * out, const char * in, size_t size)
 
 	do {
 		strm.next_out = temp_buffer;
-		strm.avail_out = cmp_buf_size;
+		strm.avail_out = sizeof(temp_buffer);
 
 		res = inflate(&strm, Z_NO_FLUSH);
 
@@ -89,7 +89,7 @@ bool decompress(std::string * out, const char * in, size_t size)
 			break;
 
 		// avail_out is amount of *unused* space in next_out
-		size_t count = cmp_buf_size - strm.avail_out;
+		size_t count = sizeof(temp_buffer) - strm.avail_out;
 		auto signed_buf = reinterpret_cast<const char *>(temp_buffer);
 		out->append(signed_buf, count);
 	} while (res == Z_OK);

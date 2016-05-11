@@ -9,6 +9,7 @@ namespace NBT {
 // Converts relative negative indexes to positive indexes
 #define TOABS(x, size) ((x) < 0 ? size + (x) : (x))
 
+
 /********************
  * Con/De-structors *
  ********************/
@@ -20,11 +21,13 @@ Tag::Tag(const UByte *bytes, bool compound) :
 	read(bytes, compound);
 }
 
+
 Tag::Tag(const TagType tag, UInt size, TagType subtype) :
 	type(TagType::End)
 {
 	setTag(tag, size, subtype);
 }
+
 
 Tag::Tag(const std::string &x) :
 	type(TagType::String)
@@ -33,6 +36,7 @@ Tag::Tag(const std::string &x) :
 	value.v_string.value = new char[x.size()];
 	memcpy(value.v_string.value, x.data(), x.size());
 }
+
 
 
 /*************
@@ -111,6 +115,7 @@ Tag & Tag::operator += (Tag &&t)
 }
 
 
+
 /********
  * Misc *
  ********/
@@ -144,6 +149,7 @@ void Tag::setTag(const TagType tag, UInt size, TagType subtype)
 		memset((void*) &value, 0, sizeof(value));
 	}
 }
+
 
 void Tag::copy(const Tag &t)
 {
@@ -186,30 +192,35 @@ void Tag::copy(const Tag &t)
 		if (!size) break;
 		value.v_int_array.value = new Int[size];
 		memcpy((void*) value.v_int_array.value,
-				(void*) t.value.v_int_array.value, size * 4);
+				(void*) t.value.v_int_array.value, size * sizeof(Int));
 		break;
 	default:
 		value = t.value;
 	}
 }
 
+
 void Tag::free()
 {
 	switch (type) {
 	case TagType::ByteArray:
-		if (value.v_byte_array.size) delete [] value.v_byte_array.value;
+		if (value.v_byte_array.size)
+			delete [] value.v_byte_array.value;
 		break;
 	case TagType::String:
-		if (value.v_string.size) delete [] value.v_string.value;
+		if (value.v_string.size)
+			delete [] value.v_string.value;
 		break;
 	case TagType::List:
-		if (value.v_list.size) delete [] value.v_list.value;
+		if (value.v_list.size)
+			delete [] value.v_list.value;
 		break;
 	case TagType::Compound:
 		delete value.v_compound;
 		break;
 	case TagType::IntArray:
-		if (value.v_int_array.size) delete [] value.v_int_array.value;
+		if (value.v_int_array.size)
+			delete [] value.v_int_array.value;
 		break;
 	default:
 		break;
@@ -233,10 +244,12 @@ template <typename container, typename contained>
 		for (UInt i = 0; i < field->size; i++) {
 			newc.value[i] = std::move(field->value[i]);
 		}
-		if (field->size) delete [] field->value;
+		if (field->size)
+			delete [] field->value;
 		*field = newc;
 	}
 }
+
 
 void Tag::insert(const Int k, const Byte b)
 {
@@ -246,6 +259,7 @@ void Tag::insert(const Int k, const Byte b)
 	value.v_byte_array.value[ak] = b;
 }
 
+
 void Tag::insert(const Int k, const Int i)
 {
 	assert(type == TagType::IntArray);
@@ -253,6 +267,7 @@ void Tag::insert(const Int k, const Int i)
 	ensureSize<IntArray, Int>(&value.v_int_array, ak + 1);
 	value.v_int_array.value[ak] = i;
 }
+
 
 void Tag::insert(const Int k, const Tag &t)
 {
@@ -266,6 +281,7 @@ void Tag::insert(const Int k, const Tag &t)
 	ensureSize<List, Tag>(&value.v_list, ak + 1);
 	value.v_list.value[ak] = t;
 }
+
 
 void Tag::insert(const std::string &k, const Tag &t)
 {

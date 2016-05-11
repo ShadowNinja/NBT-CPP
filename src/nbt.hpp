@@ -126,22 +126,22 @@ public:
 	Tag & operator += (const Tag &t);
 	Tag & operator += (Tag &&t);
 
-	operator Byte      () { assert(type == TagType::Byte);      return value.v_byte; }
-	operator Short     () { assert(type == TagType::Short);     return value.v_short; }
-	operator Int       () { assert(type == TagType::Int);       return value.v_int; }
-	operator Long      () { assert(type == TagType::Long);      return value.v_long; }
-	operator float     () { assert(type == TagType::Float);     return value.v_float; }
-	operator double    () { assert(type == TagType::Double);    return value.v_double; }
+	operator Byte      () const { assert(type == TagType::Byte);      return value.v_byte; }
+	operator Short     () const { assert(type == TagType::Short);     return value.v_short; }
+	operator Int       () const { assert(type == TagType::Int);       return value.v_int; }
+	operator Long      () const { assert(type == TagType::Long);      return value.v_long; }
+	operator float     () const { assert(type == TagType::Float);     return value.v_float; }
+	operator double    () const { assert(type == TagType::Double);    return value.v_double; }
+	operator ByteArray () const { assert(type == TagType::ByteArray); return value.v_byte_array; }
+	operator String    () const { assert(type == TagType::String);    return value.v_string; }
+	operator List      () const { assert(type == TagType::List);      return value.v_list; }
+	operator Compound& () const { assert(type == TagType::Compound);  return *value.v_compound; }
+	operator IntArray  () const { assert(type == TagType::IntArray);  return value.v_int_array; }
 	operator ByteArray () { assert(type == TagType::ByteArray); return value.v_byte_array; }
 	operator String    () { assert(type == TagType::String);    return value.v_string; }
 	operator List      () { assert(type == TagType::List);      return value.v_list; }
 	operator Compound& () { assert(type == TagType::Compound);  return *value.v_compound; }
 	operator IntArray  () { assert(type == TagType::IntArray);  return value.v_int_array; }
-	operator const ByteArray () const { assert(type == TagType::ByteArray); return value.v_byte_array; }
-	operator const String    () const { assert(type == TagType::String);    return value.v_string; }
-	operator const List      () const { assert(type == TagType::List);      return value.v_list; }
-	operator const Compound& () const { assert(type == TagType::Compound);  return *value.v_compound; }
-	operator const IntArray  () const { assert(type == TagType::IntArray);  return value.v_int_array; }
 
 	operator std::string () const {
 		assert(type == TagType::String);

@@ -26,7 +26,7 @@ NBT_READER(Long,   ULong,  be64toh)
 NBT_READER(Float,  float,  be32toh)
 NBT_READER(Double, double, be64toh)
 
-// The following take a refference to the index becuase they can read a
+// The following take a reference to the index becuase they can read a
 // variable amount of data and have to update the main index appropriately.
 extern ByteArray  readByteArray(const UByte * bytes, ULong & index);
 extern String     readString   (const UByte * bytes, ULong & index);
