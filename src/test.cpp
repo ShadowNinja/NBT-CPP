@@ -1,4 +1,6 @@
-
+#ifdef NDEBUG
+#	undef NDEBUG
+#endif
 #include <iostream>
 #include <string>
 #include <cstring>
