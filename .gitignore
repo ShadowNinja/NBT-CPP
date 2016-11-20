@@ -1,6 +1,6 @@
-.scon*
-*.o
-*.obj
-bin
 *~
-
+/bin
+/CMakeCache.txt
+/CMakeFiles
+/Makefile
+/cmake_install.cmake
