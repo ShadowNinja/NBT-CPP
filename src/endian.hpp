@@ -29,8 +29,16 @@
 	#define be16toh(x) ntohs(x)
 	#define htobe32(x) htonl(x)
 	#define be32toh(x) ntohl(x)
-	#define htobe64(x) htonll(x)
-	#define be64toh(x) ntohll(x)
+
+	#if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
+		#define htobe64(x) (((uint64_t)htonl((uint64_t)(x) & 0xFFFFFFFF) << 32) | htonl((uint64_t)(x) >> 32))
+		#define be64toh(x) (((uint64_t)ntohl((uint64_t)(x) & 0xFFFFFFFF) << 32) | ntohl((uint64_t)(x) >> 32))
+	#elif __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
+		#define htobe64(x) x
+		#define be64toh(x) x
+	#else
+		#error "Only big and little endian supported on Windows!"
+	#endif
 #else
 	#error Platform not supported!
 #endif
